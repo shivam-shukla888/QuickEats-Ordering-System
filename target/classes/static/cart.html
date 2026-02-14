@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - QuickEats</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-hamburger"></i> QuickEats
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Restaurants</a>
+            <a href="cart.html" class="nav-link cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="cart-count" class="cart-count">0</span>
+            </a>
+            <a href="#" class="nav-link"><i class="fas fa-user"></i></a>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem; max-width: 800px;">
+        <h1 class="section-title">Your Cart</h1>
+
+        <div id="cart-items" class="cart-items">
+            <!-- Cart items loaded via JS -->
+        </div>
+
+        <div class="card" style="margin-top: 2rem; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Total</h2>
+                <span class="price" style="font-size: 1.5rem;">$<span id="cart-total-amount">0.00</span></span>
+            </div>
+
+            <button onclick="placeOrder()" class="btn" style="width: 100%; font-size: 1.1rem;">Place Order</button>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

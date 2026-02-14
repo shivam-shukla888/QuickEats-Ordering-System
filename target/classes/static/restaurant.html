@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Menu - QuickEats</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-hamburger"></i> QuickEats
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Restaurants</a>
+            <a href="cart.html" class="nav-link cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="cart-count" class="cart-count">0</span>
+            </a>
+            <a href="#" class="nav-link"><i class="fas fa-user"></i></a>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem;">
+        <div id="restaurant-menu">
+            <h1 id="restaurant-name" style="font-size: 2.5rem; margin-bottom: 0.5rem;">Loading...</h1>
+            <p id="restaurant-info" style="color: var(--text-light); margin-bottom: 2rem;">...</p>
+
+            <h2 class="section-title" style="text-align: left;">Menu</h2>
+            <div id="menu-list"
+                style="background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;">
+                <!-- Menu items loaded via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - QuickEats</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .track-container {
+            max-width: 600px;
+            margin: 3rem auto;
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 3rem 0;
+            position: relative;
+        }
+
+        .status-steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #eee;
+            z-index: 1;
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            background: white;
+            padding: 0 10px;
+        }
+
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            background: #eee;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-icon {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
+        }
+
+        .step-text {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .step.active .step-text {
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Simulation controls */
+        .admin-controls {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-hamburger"></i> QuickEats
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+        </div>
+    </nav>
+
+    <div class="track-container">
+        <h1>Order Tracking</h1>
+        <p>Order ID: <span id="order-id">#...</span></p>
+
+        <div class="status-info">
+            <h2 id="current-status" style="color: var(--primary); margin-top: 1rem;">Loading status...</h2>
+            <p>Your food is on the way!</p>
+        </div>
+
+        <div class="status-steps">
+            <div class="step" id="step-PENDING">
+                <div class="step-icon"><i class="fas fa-receipt"></i></div>
+                <div class="step-text">Order Placed</div>
+            </div>
+            <div class="step" id="step-CONFIRMED">
+                <div class="step-icon"><i class="fas fa-fire"></i></div>
+                <div class="step-text">Preparing</div>
+            </div>
+            <div class="step" id="step-DELIVERING">
+                <div class="step-icon"><i class="fas fa-biking"></i></div>
+                <div class="step-text">Out for Delivery</div>
+            </div>
+            <div class="step" id="step-DELIVERED">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">Delivered</div>
+            </div>
+        </div>
+
+        <div class="admin-controls">
+            <small>Simulation Controls (For Demo)</small><br>
+            <button class="btn" style="margin-top: 5px; padding: 0.5rem 1rem; font-size: 0.8rem;"
+                onclick="advanceStatus()">Advance Order Status</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+        document.getElementById('order-id').textContent = '#' + orderId;
+
+        const steps = ['PENDING', 'CONFIRMED', 'DELIVERING', 'DELIVERED'];
+        let currentStatusIndex = 0;
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch(`/api/orders/${orderId}/status`);
+                if (response.ok) {
+                    const status = await response.text();
+                    updateUI(status);
+                }
+            } catch (e) {
+                console.error('Error fetching status:', e);
+            }
+        }
+
+        function updateUI(status) {
+            document.getElementById('current-status').textContent = status.replace('_', ' ');
+
+            // Reset all
+            steps.forEach(s => document.getElementById(`step-${s}`).classList.remove('active'));
+
+            // Activate up to current
+            const index = steps.indexOf(status);
+            if (index !== -1) {
+                currentStatusIndex = index;
+                for (let i = 0; i <= index; i++) {
+                    document.getElementById(`step-${steps[i]}`).classList.add('active');
+                }
+            }
+        }
+
+        async function advanceStatus() {
+            if (currentStatusIndex < steps.length - 1) {
+                const nextStatus = steps[currentStatusIndex + 1];
+                await fetch(`/api/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'text/plain' }, // Sending string directly
+                    body: nextStatus
+                });
+                fetchStatus(); // Refresh immediately
+            }
+        }
+
+        // Poll every 3 seconds
+        fetchStatus();
+        setInterval(fetchStatus, 3000);
+    </script>
+</body>
+
+</html>

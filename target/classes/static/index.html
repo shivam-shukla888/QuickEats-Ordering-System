@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickEats - Order Food Online</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-hamburger"></i> QuickEats
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Restaurants</a>
+            <a href="cart.html" class="nav-link cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="cart-count" class="cart-count">0</span>
+            </a>
+            <div id="auth-links" style="display: inline-block;">
+                <a href="login.html" class="nav-link">Login</a>
+                <a href="signup.html" class="nav-link">Sign Up</a>
+            </div>
+            <div id="user-links" style="display: none;">
+                <span id="user-name" class="nav-link" style="color: var(--primary);"></span>
+                <a href="#" id="logout-btn" class="nav-link">Logout</a>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (user) {
+                    document.getElementById('auth-links').style.display = 'none';
+                    document.getElementById('user-links').style.display = 'inline-block';
+                    document.getElementById('user-name').textContent = `Hi, ${user.name}`;
+                    document.getElementById('logout-btn').addEventListener('click', () => {
+                        localStorage.removeItem('user');
+                        window.location.reload();
+                    });
+                }
+            });
+        </script>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Delicious Food, Delivered</h1>
+            <p>Order from the best restaurants near you</p>
+            <a href="#restaurants" class="btn">Order Now</a>
+        </div>
+    </header>
+
+    <div class="container" id="restaurants">
+        <h2 class="section-title">Popular Restaurants</h2>
+        <div id="restaurant-list" class="grid">
+            <!-- Details loaded via JS -->
+            <div class="empty-state">Loading delicious options...</div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>
