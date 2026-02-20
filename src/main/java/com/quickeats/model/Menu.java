@@ -1,6 +1,10 @@
 package com.quickeats.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "menus")
@@ -10,27 +14,30 @@ public class Menu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Item name is required")
+    @Size(max = 200)
     @Column(nullable = false)
     private String itemName;
 
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     @Column(nullable = false)
     private Double price;
 
+    @Size(max = 1000)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
+    @JsonIgnore
     private Restaurant restaurant;
 
     public Menu() {
     }
 
-    public Menu(Long id, String itemName, Double price, String description, Restaurant restaurant) {
-        this.id = id;
+    public Menu(String itemName, Double price, String description) {
         this.itemName = itemName;
         this.price = price;
         this.description = description;
-        this.restaurant = restaurant;
     }
 
     public Long getId() {

@@ -1,6 +1,10 @@
 package com.quickeats.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,15 +17,20 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
+    @JsonIgnore
     private Restaurant restaurant;
 
+    @NotBlank(message = "Order status is required")
     @Column(nullable = false)
-    private String status; // e.g., PENDING, CONFIRMED, DELIVERED
+    private String status = "PENDING";
 
+    @NotNull(message = "Total amount is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be greater than 0")
     @Column(nullable = false)
     private Double totalAmount;
 
@@ -39,14 +48,10 @@ public class Order {
     public Order() {
     }
 
-    public Order(Long id, User user, Restaurant restaurant, String status, Double totalAmount, LocalDateTime orderTime,
-            String orderItems) {
-        this.id = id;
+    public Order(User user, Restaurant restaurant, Double totalAmount, String orderItems) {
         this.user = user;
         this.restaurant = restaurant;
-        this.status = status;
         this.totalAmount = totalAmount;
-        this.orderTime = orderTime;
         this.orderItems = orderItems;
     }
 

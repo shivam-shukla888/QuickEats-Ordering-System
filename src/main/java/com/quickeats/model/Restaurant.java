@@ -1,6 +1,8 @@
 package com.quickeats.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 @Entity
@@ -11,27 +13,34 @@ public class Restaurant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Restaurant name is required")
+    @Size(max = 200)
     @Column(nullable = false)
     private String name;
 
+    @NotBlank(message = "Address is required")
+    @Size(max = 500)
     @Column(nullable = false)
     private String address;
 
+    @NotBlank(message = "Cuisine type is required")
+    @Size(max = 100)
     @Column(nullable = false)
     private String cuisineType;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Menu> menuItems;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders;
 
     public Restaurant() {
     }
 
-    public Restaurant(Long id, String name, String address, String cuisineType, List<Menu> menuItems) {
-        this.id = id;
+    public Restaurant(String name, String address, String cuisineType) {
         this.name = name;
         this.address = address;
         this.cuisineType = cuisineType;
-        this.menuItems = menuItems;
     }
 
     public Long getId() {
@@ -72,5 +81,13 @@ public class Restaurant {
 
     public void setMenuItems(List<Menu> menuItems) {
         this.menuItems = menuItems;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 }

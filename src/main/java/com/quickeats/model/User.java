@@ -1,6 +1,10 @@
 package com.quickeats.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -10,23 +14,32 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name is required")
+    @Size(max = 100)
     @Column(nullable = false)
     private String name;
 
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     @Column(nullable = false, unique = true)
     private String email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     @Column(nullable = false)
     private String password;
 
+    @NotBlank(message = "Role is required")
     @Column(nullable = false)
-    private String role; // e.g., CUSTOMER, ADMIN
+    private String role = "CUSTOMER";
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders;
 
     public User() {
     }
 
-    public User(Long id, String name, String email, String password, String role) {
-        this.id = id;
+    public User(String name, String email, String password, String role) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -71,5 +84,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 }
