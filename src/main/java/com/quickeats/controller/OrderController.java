@@ -24,6 +24,9 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private com.quickeats.service.UserService userService;
+
     @PostMapping
     public ResponseEntity<OrderResponseDTO> placeOrder(@Valid @RequestBody CreateOrderDTO createOrderDTO) {
         OrderResponseDTO orderResponse = orderService.placeOrder(createOrderDTO);
@@ -39,6 +42,18 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderResponseDTO(id));
+    }
+
+    @GetMapping("/my-orders")
+    public ResponseEntity<Page<OrderResponseDTO>> getMyOrders(
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        com.quickeats.model.User user = userService.getUserByEmail(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + authentication.getName()));
+        return ResponseEntity.ok(orderService.getOrdersByUser(user.getId(), pageable));
     }
 
     @GetMapping("/user/{userId}")
@@ -104,5 +119,10 @@ public class OrderController {
             throw new IllegalArgumentException("Status is required");
         }
         return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<OrderResponseDTO> cancelOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(id));
     }
 }

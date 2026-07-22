@@ -1,18 +1,24 @@
 package com.quickeats.service;
 
 import com.quickeats.dto.CreateOrderDTO;
+import com.quickeats.dto.NewOrderEventDTO;
 import com.quickeats.dto.OrderItemDTO;
 import com.quickeats.dto.OrderResponseDTO;
+import com.quickeats.dto.OrderStatusUpdateDTO;
 import com.quickeats.exception.ResourceNotFoundException;
 import com.quickeats.model.Order;
+import com.quickeats.model.OrderStatus;
 import com.quickeats.model.Restaurant;
 import com.quickeats.model.User;
 import com.quickeats.repository.OrderRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +28,8 @@ import java.util.Optional;
 
 @Service
 public class OrderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
     private OrderRepository orderRepository;
@@ -34,6 +42,9 @@ public class OrderService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired(required = false)
+    private SimpMessagingTemplate messagingTemplate;
 
     public OrderResponseDTO placeOrder(CreateOrderDTO createOrderDTO) {
         User user = userService.getUserById(createOrderDTO.getUserId())
@@ -53,8 +64,12 @@ public class OrderService {
             order.setStatus("PENDING");
 
             Order savedOrder = orderRepository.save(order);
+            OrderResponseDTO dto = convertToOrderResponseDTO(savedOrder, createOrderDTO.getItems());
 
-            return convertToOrderResponseDTO(savedOrder, createOrderDTO.getItems());
+            broadcastStatusUpdate(savedOrder, 25, 28.6289, 77.2185);
+            broadcastAdminOrderEvent(savedOrder, createOrderDTO.getItems().size());
+
+            return dto;
 
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Error processing order items JSON", e);
@@ -85,12 +100,111 @@ public class OrderService {
         return orderRepository.findByRestaurantId(restaurantId);
     }
 
+    @Autowired(required = false)
+    private FcmService fcmService;
+
     public OrderResponseDTO updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
         order.setStatus(status);
         Order updated = orderRepository.save(order);
+
+        int eta = "DELIVERED".equalsIgnoreCase(status) ? 0 : ("OUT_FOR_DELIVERY".equalsIgnoreCase(status) ? 12 : 20);
+        broadcastStatusUpdate(updated, eta, 28.6289, 77.2185);
+        broadcastAdminOrderEvent(updated, 1);
+
+        // Trigger FCM Push Notification gracefully
+        if (fcmService != null && updated.getUser() != null && updated.getUser().getFcmDeviceToken() != null) {
+            try {
+                String pushTitle = "Order #" + updated.getId() + " Update!";
+                String pushBody = "DELIVERED".equalsIgnoreCase(status) 
+                    ? "Your order has been Delivered! Enjoy your meal! 🍔"
+                    : ("OUT_FOR_DELIVERY".equalsIgnoreCase(status)
+                        ? "Your order is now Out for Delivery! 🛵"
+                        : "Your order status is now " + status + ".");
+                fcmService.sendPushNotification(updated.getUser().getFcmDeviceToken(), pushTitle, pushBody);
+            } catch (Exception e) {
+                logger.warn("FCM push notification attempt failed gracefully: {}", e.getMessage());
+            }
+        }
+
         return convertToOrderResponseDTO(updated);
+    }
+
+    public OrderResponseDTO cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+        if ("DELIVERED".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalStateException("Delivered orders cannot be cancelled.");
+        }
+
+        order.setStatus("CANCELLED");
+        Order updated = orderRepository.save(order);
+
+        broadcastStatusUpdate(updated, 0, 28.6289, 77.2185);
+        broadcastAdminOrderEvent(updated, 1);
+
+        if (fcmService != null && updated.getUser() != null && updated.getUser().getFcmDeviceToken() != null) {
+            try {
+                fcmService.sendPushNotification(
+                    updated.getUser().getFcmDeviceToken(),
+                    "Order #" + orderId + " Cancelled",
+                    "Your order #" + orderId + " has been cancelled successfully."
+                );
+            } catch (Exception e) {
+                logger.warn("FCM push notification attempt failed: {}", e.getMessage());
+            }
+        }
+
+        return convertToOrderResponseDTO(updated);
+    }
+
+    public void broadcastStatusUpdate(Order order, int etaMinutes, double lat, double lng) {
+        if (messagingTemplate != null) {
+            try {
+                OrderStatus orderStatus;
+                try {
+                    orderStatus = OrderStatus.valueOf(order.getStatus().toUpperCase());
+                } catch (Exception e) {
+                    orderStatus = OrderStatus.PENDING;
+                }
+
+                OrderStatusUpdateDTO dto = new OrderStatusUpdateDTO(
+                    order.getId(),
+                    orderStatus,
+                    "Ramesh Kumar",
+                    "+91 98765 43210",
+                    etaMinutes,
+                    lat,
+                    lng
+                );
+                messagingTemplate.convertAndSend("/topic/orders/" + order.getId(), dto);
+                logger.info("Broadcasted WebSocket update for order #{}", order.getId());
+            } catch (Exception e) {
+                logger.warn("Failed to broadcast WebSocket update for order #{}: {}", order.getId(), e.getMessage());
+            }
+        }
+    }
+
+    public void broadcastAdminOrderEvent(Order order, int itemCount) {
+        if (messagingTemplate != null) {
+            try {
+                NewOrderEventDTO adminDto = new NewOrderEventDTO(
+                    order.getId(),
+                    order.getUser() != null ? order.getUser().getName() : "Customer",
+                    order.getRestaurant() != null ? order.getRestaurant().getName() : "Restaurant",
+                    itemCount,
+                    order.getTotalAmount(),
+                    order.getStatus(),
+                    order.getOrderTime() != null ? order.getOrderTime() : LocalDateTime.now()
+                );
+                messagingTemplate.convertAndSend("/topic/admin/orders", adminDto);
+                logger.info("Broadcasted Admin WebSocket notification for order #{}", order.getId());
+            } catch (Exception e) {
+                logger.warn("Failed to broadcast Admin order event for order #{}: {}", order.getId(), e.getMessage());
+            }
+        }
     }
 
     public Page<OrderResponseDTO> getOrdersByUserAndStatus(Long userId, String status, Pageable pageable) {

@@ -34,6 +34,9 @@ public class UserController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private com.quickeats.service.RefreshTokenService refreshTokenService;
+
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody User user) {
         User createdUser = userService.createUser(user);
@@ -50,7 +53,8 @@ public class UserController {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return ResponseEntity.ok(new AuthResponseDTO(token, UserResponseDTO.fromEntity(user)));
+        com.quickeats.model.RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        return ResponseEntity.ok(new AuthResponseDTO(token, refreshToken.getToken(), UserResponseDTO.fromEntity(user)));
     }
 
     @GetMapping

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0F172A"/>
+  
+  <!-- Subtle Gradient Accent Orbs -->
+  <circle cx="1100" cy="100" r="300" fill="#059669" opacity="0.15" filter="blur(60px)"/>
+  <circle cx="100" cy="530" r="250" fill="#F59E0B" opacity="0.12" filter="blur(60px)"/>
+  
+  <!-- Card Container -->
+  <rect x="100" y="80" width="1000" height="470" rx="32" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+  
+  <!-- Logo Icon -->
+  <rect x="160" y="140" width="80" height="80" rx="24" fill="#059669"/>
+  <path d="M190 165L215 180L190 195V165Z" fill="#F59E0B" stroke="#F59E0B" stroke-width="3" stroke-linejoin="round"/>
+  
+  <!-- Title & Subtitle -->
+  <text x="260" y="195" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="48" fill="#FFFFFF" letter-spacing="-1">QuickEats</text>
+  <text x="260" y="230" font-family="'Inter', sans-serif" font-weight="600" font-size="20" fill="#10B981" letter-spacing="2">NEXT-GEN AI CULINARY LOGISTICS</text>
+  
+  <!-- Headline -->
+  <text x="160" y="320" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="38" fill="#F8FAFC">Autonomous Tool-Calling AI & Vector RAG Platform</text>
+  <text x="160" y="365" font-family="'Inter', sans-serif" font-weight="400" font-size="22" fill="#94A3B8">Real-time GPS Tracking • LangChain4j + Groq • Hardened Safety Guardrails</text>
+  
+  <!-- Feature Badges -->
+  <rect x="160" y="420" width="210" height="44" rx="12" fill="#334155"/>
+  <text x="180" y="448" font-family="'Inter', sans-serif" font-weight="700" font-size="15" fill="#38BDF8">🤖 Multi-Agent AI</text>
+  
+  <rect x="390" y="420" width="220" height="44" rx="12" fill="#334155"/>
+  <text x="410" y="448" font-family="'Inter', sans-serif" font-weight="700" font-size="15" fill="#34D399">⚡ Vector RAG Engine</text>
+  
+  <rect x="630" y="420" width="240" height="44" rx="12" fill="#334155"/>
+  <text x="650" y="448" font-family="'Inter', sans-serif" font-weight="700" font-size="15" fill="#FBBF24">🛡️ Safety Guardrails</text>
+</svg>

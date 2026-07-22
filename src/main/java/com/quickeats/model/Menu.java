@@ -26,6 +26,14 @@ public class Menu {
     @Size(max = 1000)
     private String description;
 
+    private Boolean isVeg = false;
+
+    @Enumerated(EnumType.STRING)
+    private SpiceLevel spiceLevel;
+
+    @Size(max = 500)
+    private String tags;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
     @JsonIgnore
@@ -45,6 +53,16 @@ public class Menu {
         this.itemName = itemName;
         this.price = price;
         this.description = description;
+    }
+
+    public Menu(Restaurant restaurant, String itemName, Double price, String description, Boolean isVeg, SpiceLevel spiceLevel, String tags) {
+        this.restaurant = restaurant;
+        this.itemName = itemName;
+        this.price = price;
+        this.description = description;
+        this.isVeg = isVeg;
+        this.spiceLevel = spiceLevel;
+        this.tags = tags;
     }
 
     public Long getId() {
@@ -77,6 +95,30 @@ public class Menu {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getIsVeg() {
+        return isVeg;
+    }
+
+    public void setIsVeg(Boolean isVeg) {
+        this.isVeg = isVeg;
+    }
+
+    public SpiceLevel getSpiceLevel() {
+        return spiceLevel;
+    }
+
+    public void setSpiceLevel(SpiceLevel spiceLevel) {
+        this.spiceLevel = spiceLevel;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 
     public Restaurant getRestaurant() {

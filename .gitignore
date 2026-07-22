@@ -8,6 +8,12 @@ target/
 *.log
 startup.log
 
+# Frontend Build & Node Modules
+QuickEats-Frontend/node_modules/
+QuickEats-Frontend/dist/
+node_modules/
+dist/
+
 # IDE files
 .idea/
 *.iml
@@ -19,6 +25,11 @@ startup.log
 # Environment / local settings
 .env
 *.env.local
+*.env
+firebase-service-account.json
+run_app.bat
+kill_port8080.bat
+run_frontend.bat
 
 # OS generated files
 .DS_Store

@@ -35,6 +35,9 @@ public class User {
     @Column(nullable = false)
     private String role = "CUSTOMER";
 
+    @Column(length = 500)
+    private String fcmDeviceToken;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
 
@@ -86,6 +89,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getFcmDeviceToken() {
+        return fcmDeviceToken;
+    }
+
+    public void setFcmDeviceToken(String fcmDeviceToken) {
+        this.fcmDeviceToken = fcmDeviceToken;
     }
 
     public List<Order> getOrders() {

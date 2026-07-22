@@ -1,5 +1,6 @@
 package com.quickeats.dto;
 
+import com.quickeats.model.SpiceLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -14,6 +15,9 @@ public class MenuRequestDTO {
     private Double price;
 
     private String description;
+    private Boolean isVeg = false;
+    private SpiceLevel spiceLevel;
+    private String tags;
 
     public MenuRequestDTO() {
     }
@@ -22,6 +26,15 @@ public class MenuRequestDTO {
         this.itemName = itemName;
         this.price = price;
         this.description = description;
+    }
+
+    public MenuRequestDTO(String itemName, Double price, String description, Boolean isVeg, SpiceLevel spiceLevel, String tags) {
+        this.itemName = itemName;
+        this.price = price;
+        this.description = description;
+        this.isVeg = isVeg;
+        this.spiceLevel = spiceLevel;
+        this.tags = tags;
     }
 
     public String getItemName() {
@@ -46,5 +59,29 @@ public class MenuRequestDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getIsVeg() {
+        return isVeg;
+    }
+
+    public void setIsVeg(Boolean isVeg) {
+        this.isVeg = isVeg;
+    }
+
+    public SpiceLevel getSpiceLevel() {
+        return spiceLevel;
+    }
+
+    public void setSpiceLevel(SpiceLevel spiceLevel) {
+        this.spiceLevel = spiceLevel;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 }
