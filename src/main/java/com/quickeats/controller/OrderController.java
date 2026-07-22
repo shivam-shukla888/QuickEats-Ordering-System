@@ -2,16 +2,19 @@ package com.quickeats.controller;
 
 import com.quickeats.dto.CreateOrderDTO;
 import com.quickeats.dto.OrderResponseDTO;
-import com.quickeats.model.Order;
+import com.quickeats.exception.ResourceNotFoundException;
 import com.quickeats.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,55 +25,63 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<?> placeOrder(@Valid @RequestBody CreateOrderDTO createOrderDTO) {
-        try {
-            OrderResponseDTO orderResponse = orderService.placeOrder(createOrderDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<OrderResponseDTO> placeOrder(@Valid @RequestBody CreateOrderDTO createOrderDTO) {
+        OrderResponseDTO orderResponse = orderService.placeOrder(createOrderDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<OrderResponseDTO>> getAllOrders(
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.getAllOrders(pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrderById(@PathVariable Long id) {
-        try {
-            OrderResponseDTO orderResponse = orderService.getOrderResponseDTO(id);
-            return ResponseEntity.ok(orderResponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrderResponseDTO(id));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Order>> getOrdersByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(orderService.getOrdersByUser(userId));
+    public ResponseEntity<Page<OrderResponseDTO>> getOrdersByUser(
+            @PathVariable Long userId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByUser(userId, pageable));
     }
 
     @GetMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<List<Order>> getOrdersByRestaurant(@PathVariable Long restaurantId) {
-        return ResponseEntity.ok(orderService.getOrdersByRestaurant(restaurantId));
+    public ResponseEntity<Page<OrderResponseDTO>> getOrdersByRestaurant(
+            @PathVariable Long restaurantId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByRestaurant(restaurantId, pageable));
     }
 
     @GetMapping("/user/{userId}/status/{status}")
-    public ResponseEntity<List<Order>> getOrdersByUserAndStatus(@PathVariable Long userId, @PathVariable String status) {
-        return ResponseEntity.ok(orderService.getOrdersByUserAndStatus(userId, status));
+    public ResponseEntity<Page<OrderResponseDTO>> getOrdersByUserAndStatus(
+            @PathVariable Long userId,
+            @PathVariable String status,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByUserAndStatus(userId, status, pageable));
     }
 
     @GetMapping("/restaurant/{restaurantId}/status/{status}")
-    public ResponseEntity<List<Order>> getOrdersByRestaurantAndStatus(@PathVariable Long restaurantId, @PathVariable String status) {
-        return ResponseEntity.ok(orderService.getOrdersByRestaurantAndStatus(restaurantId, status));
+    public ResponseEntity<Page<OrderResponseDTO>> getOrdersByRestaurantAndStatus(
+            @PathVariable Long restaurantId,
+            @PathVariable String status,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByRestaurantAndStatus(restaurantId, status, pageable));
     }
 
     @GetMapping("/between-dates")
-    public ResponseEntity<List<Order>> getOrdersBetweenDates(
+    public ResponseEntity<Page<OrderResponseDTO>> getOrdersBetweenDates(
             @RequestParam String startDate,
-            @RequestParam String endDate) {
+            @RequestParam String endDate,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         try {
             LocalDateTime start = LocalDateTime.parse(startDate);
             LocalDateTime end = LocalDateTime.parse(endDate);
-            return ResponseEntity.ok(orderService.getOrdersBetweenDates(start, end));
+            return ResponseEntity.ok(orderService.getOrdersBetweenDates(start, end, pageable));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+            throw new IllegalArgumentException("Invalid date format. Use ISO format (e.g. 2026-07-22T10:00:00)");
         }
     }
 
@@ -80,23 +91,18 @@ public class OrderController {
     }
 
     @GetMapping("/{id}/status")
-    public ResponseEntity<String> getOrderStatus(@PathVariable Long id) {
-        return orderService.getOrderById(id)
-                .map(order -> ResponseEntity.ok(order.getStatus()))
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Map<String, String>> getOrderStatus(@PathVariable Long id) {
+        OrderResponseDTO dto = orderService.getOrderResponseDTO(id);
+        return ResponseEntity.ok(Map.of("status", dto.getStatus()));
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> statusMap) {
-        try {
-            String status = statusMap.get("status");
-            if (status == null || status.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
-            }
-            Order updatedOrder = orderService.updateOrderStatus(id, status);
-            return ResponseEntity.ok(updatedOrder);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+    public ResponseEntity<OrderResponseDTO> updateOrderStatus(
+            @PathVariable Long id, @RequestBody Map<String, String> statusMap) {
+        String status = statusMap.get("status");
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status is required");
         }
+        return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
     }
 }

@@ -1,10 +1,16 @@
 package com.quickeats.controller;
 
-import com.quickeats.model.Menu;
-import com.quickeats.model.Restaurant;
+import com.quickeats.dto.MenuRequestDTO;
+import com.quickeats.dto.MenuResponseDTO;
+import com.quickeats.dto.RestaurantRequestDTO;
+import com.quickeats.dto.RestaurantResponseDTO;
 import com.quickeats.service.RestaurantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,35 +26,34 @@ public class RestaurantController {
     private RestaurantService restaurantService;
 
     @PostMapping
-    public ResponseEntity<?> createRestaurant(@Valid @RequestBody Restaurant restaurant) {
-        try {
-            Restaurant createdRestaurant = restaurantService.createRestaurant(restaurant);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdRestaurant);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<RestaurantResponseDTO> createRestaurant(@Valid @RequestBody RestaurantRequestDTO restaurantDTO) {
+        RestaurantResponseDTO createdRestaurant = restaurantService.createRestaurant(restaurantDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRestaurant);
     }
 
     @GetMapping
-    public ResponseEntity<List<Restaurant>> getAllRestaurants() {
-        return ResponseEntity.ok(restaurantService.getAllRestaurants());
+    public ResponseEntity<Page<RestaurantResponseDTO>> getAllRestaurants(
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(restaurantService.getAllRestaurants(pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Restaurant> getRestaurantById(@PathVariable Long id) {
-        return restaurantService.getRestaurantById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<RestaurantResponseDTO> getRestaurantById(@PathVariable Long id) {
+        return ResponseEntity.ok(restaurantService.getRestaurantById(id));
     }
 
     @GetMapping("/cuisine/{cuisineType}")
-    public ResponseEntity<List<Restaurant>> getRestaurantsByCuisineType(@PathVariable String cuisineType) {
-        return ResponseEntity.ok(restaurantService.getRestaurantsByCuisineType(cuisineType));
+    public ResponseEntity<Page<RestaurantResponseDTO>> getRestaurantsByCuisineType(
+            @PathVariable String cuisineType,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(restaurantService.getRestaurantsByCuisineType(cuisineType, pageable));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Restaurant>> searchRestaurants(@RequestParam String name) {
-        return ResponseEntity.ok(restaurantService.searchRestaurantsByName(name));
+    public ResponseEntity<Page<RestaurantResponseDTO>> searchRestaurants(
+            @RequestParam String name,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(restaurantService.searchRestaurantsByName(name, pageable));
     }
 
     @GetMapping("/cuisines")
@@ -57,61 +62,38 @@ public class RestaurantController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRestaurant(@PathVariable Long id, @Valid @RequestBody Restaurant restaurant) {
-        try {
-            Restaurant updatedRestaurant = restaurantService.updateRestaurant(id, restaurant);
-            return ResponseEntity.ok(updatedRestaurant);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<RestaurantResponseDTO> updateRestaurant(
+            @PathVariable Long id, @Valid @RequestBody RestaurantRequestDTO restaurantDTO) {
+        return ResponseEntity.ok(restaurantService.updateRestaurant(id, restaurantDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRestaurant(@PathVariable Long id) {
-        try {
-            restaurantService.deleteRestaurant(id);
-            return ResponseEntity.ok(Map.of("message", "Restaurant deleted successfully"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<Map<String, String>> deleteRestaurant(@PathVariable Long id) {
+        restaurantService.deleteRestaurant(id);
+        return ResponseEntity.ok(Map.of("message", "Restaurant deleted successfully"));
     }
 
     @PostMapping("/{id}/menu")
-    public ResponseEntity<?> addMenuToRestaurant(@PathVariable Long id, @Valid @RequestBody Menu menu) {
-        try {
-            Menu createdMenu = restaurantService.addMenuToRestaurant(id, menu);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdMenu);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<MenuResponseDTO> addMenuToRestaurant(
+            @PathVariable Long id, @Valid @RequestBody MenuRequestDTO menuDTO) {
+        MenuResponseDTO createdMenu = restaurantService.addMenuToRestaurant(id, menuDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdMenu);
     }
 
     @GetMapping("/{id}/menu")
-    public ResponseEntity<List<Menu>> getMenuByRestaurant(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(restaurantService.getMenuByRestaurant(id));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<List<MenuResponseDTO>> getMenuByRestaurant(@PathVariable Long id) {
+        return ResponseEntity.ok(restaurantService.getMenuByRestaurant(id));
     }
 
     @PutMapping("/menu/{menuId}")
-    public ResponseEntity<?> updateMenu(@PathVariable Long menuId, @Valid @RequestBody Menu menu) {
-        try {
-            Menu updatedMenu = restaurantService.updateMenu(menuId, menu);
-            return ResponseEntity.ok(updatedMenu);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<MenuResponseDTO> updateMenu(
+            @PathVariable Long menuId, @Valid @RequestBody MenuRequestDTO menuDTO) {
+        return ResponseEntity.ok(restaurantService.updateMenu(menuId, menuDTO));
     }
 
     @DeleteMapping("/menu/{menuId}")
-    public ResponseEntity<?> deleteMenu(@PathVariable Long menuId) {
-        try {
-            restaurantService.deleteMenu(menuId);
-            return ResponseEntity.ok(Map.of("message", "Menu item deleted successfully"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<Map<String, String>> deleteMenu(@PathVariable Long menuId) {
+        restaurantService.deleteMenu(menuId);
+        return ResponseEntity.ok(Map.of("message", "Menu item deleted successfully"));
     }
 }

@@ -40,6 +40,13 @@ public class Menu {
         this.description = description;
     }
 
+    public Menu(Restaurant restaurant, String itemName, Double price, String description) {
+        this.restaurant = restaurant;
+        this.itemName = itemName;
+        this.price = price;
+        this.description = description;
+    }
+
     public Long getId() {
         return id;
     }
