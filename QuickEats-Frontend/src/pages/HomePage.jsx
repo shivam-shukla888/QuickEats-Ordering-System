@@ -61,9 +61,11 @@ const HomePage = () => {
   const fetchCuisinesList = async () => {
     try {
       const data = await getCuisines();
-      setCuisines(data || []);
+      const list = Array.isArray(data) ? data : (data?.content || []);
+      setCuisines(list);
     } catch (err) {
       console.error('Failed to load cuisines:', err);
+      setCuisines([]);
     }
   };
 
@@ -77,11 +79,13 @@ const HomePage = () => {
       } else {
         pageData = await getRestaurants(page, pageSize);
       }
-      setRestaurants(pageData.content || []);
-      setTotalPages(pageData.totalPages || 0);
-      setTotalElements(pageData.totalElements || 0);
+      const list = Array.isArray(pageData) ? pageData : (pageData?.content || []);
+      setRestaurants(list);
+      setTotalPages(pageData?.totalPages || 0);
+      setTotalElements(pageData?.totalElements || list.length);
     } catch (err) {
       setError('Unable to connect to QuickEats servers right now. Please verify your connection or try again.');
+      setRestaurants([]);
     } finally {
       setLoading(false);
     }
@@ -92,11 +96,13 @@ const HomePage = () => {
     setError('');
     try {
       const pageData = await searchMenuItemsAi(debouncedQuery.trim(), page, pageSize);
-      setDishResults(pageData.content || []);
-      setTotalPages(pageData.totalPages || 0);
-      setTotalElements(pageData.totalElements || 0);
+      const list = Array.isArray(pageData) ? pageData : (pageData?.content || []);
+      setDishResults(list);
+      setTotalPages(pageData?.totalPages || 0);
+      setTotalElements(pageData?.totalElements || list.length);
     } catch (err) {
       setError('QuickEats AI assistant is currently updating. Please rephrase your search query.');
+      setDishResults([]);
     } finally {
       setLoading(false);
     }
@@ -183,7 +189,7 @@ const HomePage = () => {
             >
               All Cuisines
             </button>
-            {cuisines.map((cuisine) => (
+            {Array.isArray(cuisines) && cuisines.map((cuisine) => (
               <button
                 key={cuisine}
                 onClick={() => handleCuisineSelect(cuisine)}
