@@ -1,49 +1,64 @@
 package com.quickeats.rag;
 
-import dev.langchain4j.data.embedding.Embedding;
-import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.store.embedding.EmbeddingMatch;
-import dev.langchain4j.store.embedding.EmbeddingStore;
+import com.quickeats.model.Menu;
+import com.quickeats.repository.MenuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class MenuRetriever {
 
     @Autowired
-    private EmbeddingModel embeddingModel;
-
-    @Autowired
-    private EmbeddingStore<TextSegment> embeddingStore;
+    private MenuRepository menuRepository;
 
     public List<DishMatch> retrieveTopMatches(String cravingQuery, int topK) {
         if (cravingQuery == null || cravingQuery.trim().isEmpty()) {
             return new ArrayList<>();
         }
 
-        Embedding queryEmbedding = embeddingModel.embed(cravingQuery).content();
-        List<EmbeddingMatch<TextSegment>> matches = embeddingStore.findRelevant(queryEmbedding, topK, 0.1);
+        String queryLower = cravingQuery.toLowerCase();
+        List<Menu> allMenus = menuRepository.findAll();
 
-        List<DishMatch> result = new ArrayList<>();
-        for (EmbeddingMatch<TextSegment> match : matches) {
-            TextSegment segment = match.embedded();
-            Double score = match.score();
+        List<DishMatch> matches = allMenus.stream()
+                .filter(menu -> {
+                    String name = menu.getItemName() != null ? menu.getItemName().toLowerCase() : "";
+                    String desc = menu.getDescription() != null ? menu.getDescription().toLowerCase() : "";
+                    String tags = menu.getTags() != null ? menu.getTags().toLowerCase() : "";
+                    return name.contains(queryLower) || desc.contains(queryLower) || tags.contains(queryLower);
+                })
+                .limit(topK > 0 ? topK : 4)
+                .map(menu -> {
+                    String restName = menu.getRestaurant() != null ? menu.getRestaurant().getName() : "QuickEats Kitchen";
+                    String text = String.format("Dish: %s. Description: %s. Restaurant: %s. Price: ₹%.2f",
+                            menu.getItemName(),
+                            menu.getDescription() != null ? menu.getDescription() : "Delicious food item",
+                            restName,
+                            menu.getPrice());
+                    return new DishMatch(menu.getId(), menu.getItemName(), menu.getPrice(), restName, text, 0.95);
+                })
+                .collect(Collectors.toList());
 
-            String menuIdStr = segment.metadata().get("menuId");
-            Long menuId = menuIdStr != null ? Long.parseLong(menuIdStr) : 1L;
-            String itemName = segment.metadata().get("itemName");
-            String priceStr = segment.metadata().get("price");
-            Double price = priceStr != null ? Double.parseDouble(priceStr) : 0.0;
-            String restaurantName = segment.metadata().get("restaurantName");
-
-            result.add(new DishMatch(menuId, itemName, price, restaurantName, segment.text(), score));
+        // If no keyword match found, return top dishes as fallback
+        if (matches.isEmpty() && !allMenus.isEmpty()) {
+            matches = allMenus.stream()
+                    .limit(topK > 0 ? topK : 4)
+                    .map(menu -> {
+                        String restName = menu.getRestaurant() != null ? menu.getRestaurant().getName() : "QuickEats Kitchen";
+                        String text = String.format("Dish: %s. Description: %s. Restaurant: %s. Price: ₹%.2f",
+                                menu.getItemName(),
+                                menu.getDescription() != null ? menu.getDescription() : "Delicious food item",
+                                restName,
+                                menu.getPrice());
+                        return new DishMatch(menu.getId(), menu.getItemName(), menu.getPrice(), restName, text, 0.85);
+                    })
+                    .collect(Collectors.toList());
         }
 
-        return result;
+        return matches;
     }
 
     public static class DishMatch {

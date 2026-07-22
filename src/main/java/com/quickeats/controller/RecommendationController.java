@@ -51,7 +51,7 @@ public class RecommendationController {
         int count = menuEmbeddingService.reindexMenuEmbeddings();
         return ResponseEntity.ok(Map.of(
                 "status", "SUCCESS",
-                "message", "Successfully reindexed " + count + " menu entities into InMemoryEmbeddingStore",
+                "message", "Successfully refreshed " + count + " menu entities",
                 "indexedItemsCount", count
         ));
     }
