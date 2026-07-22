@@ -1,137 +1,128 @@
 # QuickEats Food Ordering System
 
-A comprehensive backend-driven food ordering platform built with Java, Spring Boot, Hibernate, and MySQL.
+A RESTful backend API for a food ordering platform built with **Spring Boot 3.2**, **Java 17+**, **Spring Security**, and **JPA/Hibernate**. 
 
-## Features
+It handles user authentication, restaurant and menu management, order processing with item snapshots, and includes full test coverage with Mockito and `@SpringBootTest`.
 
-- **User Management**: User registration, authentication, and profile management
-- **Restaurant Management**: Browse restaurants by cuisine type, search by name
-- **Menu Management**: View restaurant menus with detailed item information
-- **Order Management**: Place orders, track order status, view order history
-- **Admin Features**: Restaurant and menu management for restaurant owners
+---
 
-## Tech Stack
+## 🚀 Key Features & Highlights
 
-- **Backend**: Java 17, Spring Boot 3.2.3
-- **Database**: MySQL (with H2 for development/testing)
-- **ORM**: Hibernate/JPA
-- **Security**: Spring Security with BCrypt password encoding
-- **Validation**: Jakarta Bean Validation
+- **JWT Authentication**: Token-based login (`/api/users/login`) issuing 24-hour Bearer tokens. Protected routes require `Authorization: Bearer <token>`.
+- **Clean DTO Architecture**: Request and response payloads are strictly decoupled from JPA entities (`UserResponseDTO`, `RestaurantRequestDTO/ResponseDTO`, `MenuRequestDTO/ResponseDTO`, `OrderResponseDTO`), avoiding password leaks and circular dependencies.
+- **Global Exception Handling**: Centralized `@RestControllerAdvice` returning standard JSON error responses (`{ timestamp, status, error, message, path }`) for 404s, validation errors, and bad credentials.
+- **Pagination & Sorting**: Endpoints returning lists support Spring Data `Pageable` query parameters (`page`, `size`, `sort`).
+- **OpenAPI / Swagger UI**: Interactive API documentation generated automatically via SpringDoc.
+- **CORS Support**: Configurable allowed origins (`cors.allowed-origins`) for easy integration with web or mobile frontends (React, Flutter, etc.).
+- **In-Memory & Production DB**: Runs out of the box with H2 in-memory DB (auto-seeded with sample data) and easily switches to MySQL.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Language**: Java 17+
+- **Framework**: Spring Boot 3.2.3 (Spring Web, Spring Data JPA, Spring Security, Spring Validation)
+- **Security**: Spring Security + JJWT 0.12.5 (Stateless session handling, BCrypt hashing)
+- **Database**: H2 (dev/test) / MySQL 8 (production)
+- **API Docs**: SpringDoc OpenAPI 2.5.0
 - **Build Tool**: Maven
 
-## API Endpoints
+---
 
-### User Management
-- `POST /api/users/register` - Register a new user
-- `POST /api/users/login` - User login
-- `GET /api/users` - Get all users
-- `GET /api/users/{id}` - Get user by ID
-- `PUT /api/users/{id}` - Update user
-- `DELETE /api/users/{id}` - Delete user
-
-### Restaurant Management
-- `POST /api/restaurants` - Create a new restaurant
-- `GET /api/restaurants` - Get all restaurants
-- `GET /api/restaurants/{id}` - Get restaurant by ID
-- `GET /api/restaurants/cuisine/{cuisineType}` - Get restaurants by cuisine type
-- `GET /api/restaurants/search?name={name}` - Search restaurants by name
-- `GET /api/restaurants/cuisines` - Get all cuisine types
-- `PUT /api/restaurants/{id}` - Update restaurant
-- `DELETE /api/restaurants/{id}` - Delete restaurant
-
-### Menu Management
-- `POST /api/restaurants/{id}/menu` - Add menu item to restaurant
-- `GET /api/restaurants/{id}/menu` - Get restaurant menu
-- `PUT /api/restaurants/menu/{menuId}` - Update menu item
-- `DELETE /api/restaurants/menu/{menuId}` - Delete menu item
-
-### Order Management
-- `POST /api/orders` - Place a new order
-- `GET /api/orders/{id}` - Get order by ID
-- `GET /api/orders/user/{userId}` - Get orders by user
-- `GET /api/orders/restaurant/{restaurantId}` - Get orders by restaurant
-- `GET /api/orders/user/{userId}/status/{status}` - Get user orders by status
-- `GET /api/orders/restaurant/{restaurantId}/status/{status}` - Get restaurant orders by status
-- `GET /api/orders/between-dates?startDate={}&endDate={}` - Get orders between dates
-- `GET /api/orders/status/{status}/count` - Get order count by status
-- `PUT /api/orders/{id}/status` - Update order status
-
-## Database Schema
-
-### Users Table
-- id (PK, Auto-increment)
-- name (VARCHAR, NOT NULL)
-- email (VARCHAR, UNIQUE, NOT NULL)
-- password (VARCHAR, NOT NULL, encrypted)
-- role (VARCHAR, NOT NULL, DEFAULT 'CUSTOMER')
-
-### Restaurants Table
-- id (PK, Auto-increment)
-- name (VARCHAR, NOT NULL)
-- address (VARCHAR, NOT NULL)
-- cuisine_type (VARCHAR, NOT NULL)
-
-### Menus Table
-- id (PK, Auto-increment)
-- item_name (VARCHAR, NOT NULL)
-- price (DOUBLE, NOT NULL)
-- description (TEXT)
-- restaurant_id (FK to restaurants)
-
-### Orders Table
-- id (PK, Auto-increment)
-- user_id (FK to users, NOT NULL)
-- restaurant_id (FK to restaurants, NOT NULL)
-- status (VARCHAR, NOT NULL)
-- total_amount (DOUBLE, NOT NULL)
-- order_time (DATETIME, NOT NULL)
-- order_items (JSON)
-
-## Setup Instructions
+## ⚙️ Running Locally
 
 ### Prerequisites
-- Java 17 or higher
+- JDK 17 or higher
 - Maven 3.6 or higher
-- MySQL 8.0 or higher
 
-### Database Setup
-1. Create a MySQL database named `quickeats_db`
-2. Update database credentials in `application.properties` if needed
-3. The application will automatically create tables on startup
+### Step-by-Step
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/shivam-shukla888/QuickEats-Ordering-System.git
+   cd QuickEats-Ordering-System
+   ```
 
-### Running the Application
-1. Clone the repository
-2. Navigate to the project directory
-3. Run the application:
+2. **Run the application:**
    ```bash
    mvn spring-boot:run
    ```
-4. The application will start on `http://localhost:8080`
+   The app starts on `http://localhost:8080`. Sample restaurants and menu items are automatically seeded into the database on startup.
 
-### Using H2 Database (for development)
-To use H2 instead of MySQL, comment out the MySQL configuration and uncomment the H2 configuration in `application.properties`.
+3. **Explore Interactive Docs & H2 Console:**
+   - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+   - **H2 Console**: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)  
+     *(JDBC URL: `jdbc:h2:mem:quickeatsdb`, Username: `sa`, Password: `password`)*
 
-## Sample Data
+---
 
-The application automatically seeds sample data on first startup:
-- 5 restaurants with different cuisine types (American, Italian, Indian, Chinese, Japanese)
-- Menu items for each restaurant
+## 🧪 Running Tests
 
-## Security
+Execute unit and integration tests with Maven:
 
-- Passwords are encrypted using BCrypt
-- Spring Security handles authentication
-- API endpoints are configured for public access (can be customized)
+```bash
+mvn clean test
+```
 
-## Error Handling
+Tests include:
+- **Unit tests** (`UserServiceTest`, `RestaurantServiceTest`, `OrderServiceTest`) using Mockito.
+- **Integration tests** (`UserControllerTest`) using `@SpringBootTest` & `MockMvc` covering registration, JWT login, and duplicate email constraints.
 
-The application provides comprehensive error handling with appropriate HTTP status codes and error messages.
+---
 
-## Future Enhancements
+## 📡 API Overview
 
-- JWT-based authentication
-- Role-based access control
-- Payment integration
-- Real-time order tracking
-- Email notifications
-- Image upload for menu items
+### 🔑 Authentication & Users
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/users/register` | Public | Register a new user |
+| `POST` | `/api/users/login` | Public | Authenticate & receive JWT token |
+| `GET` | `/api/users?page=0&size=10` | Authenticated | Paginated list of users |
+| `GET` | `/api/users/{id}` | Authenticated | Get user by ID |
+| `PUT` | `/api/users/{id}` | Authenticated | Update user profile |
+| `DELETE` | `/api/users/{id}` | Authenticated | Delete user account |
+
+### 🍕 Restaurants & Menus
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/restaurants?page=0&size=10` | Public | Paginated list of restaurants |
+| `GET` | `/api/restaurants/{id}` | Public | Get restaurant details |
+| `GET` | `/api/restaurants/cuisine/{cuisineType}` | Public | Filter restaurants by cuisine |
+| `GET` | `/api/restaurants/search?name={name}` | Public | Search restaurants by name |
+| `POST` | `/api/restaurants` | Authenticated | Add a new restaurant |
+| `PUT` | `/api/restaurants/{id}` | Authenticated | Update restaurant details |
+| `DELETE` | `/api/restaurants/{id}` | Authenticated | Remove restaurant |
+| `GET` | `/api/restaurants/{id}/menu` | Public | Get restaurant menu items |
+| `POST` | `/api/restaurants/{id}/menu` | Authenticated | Add menu item |
+| `PUT` | `/api/restaurants/menu/{menuId}` | Authenticated | Update menu item |
+| `DELETE` | `/api/restaurants/menu/{menuId}` | Authenticated | Delete menu item |
+
+### 🛒 Orders
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/orders` | Authenticated | Place an order |
+| `GET` | `/api/orders?page=0&size=10` | Authenticated | Paginated list of all orders |
+| `GET` | `/api/orders/{id}` | Authenticated | Get order details |
+| `GET` | `/api/orders/user/{userId}` | Authenticated | Get orders placed by a user |
+| `GET` | `/api/orders/restaurant/{restaurantId}` | Authenticated | Get orders for a restaurant |
+| `PUT` | `/api/orders/{id}/status` | Authenticated | Update order status |
+
+---
+
+## 🔒 Configuration
+
+You can customize JWT settings and CORS origins in `src/main/resources/application.properties`:
+
+```properties
+# JWT Configuration
+jwt.secret=${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+jwt.expiration=86400000
+
+# CORS Allowed Origins
+cors.allowed-origins=${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:8080,http://localhost:8081}
+```
+
+---
+
+## 📜 License
+
+MIT License. Feel free to use and modify for learning or production applications.
