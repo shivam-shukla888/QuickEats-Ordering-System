@@ -5,6 +5,7 @@ import { getAllOrders, updateOrderStatus } from '../api/orderApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { API_BASE_URL } from '../config/apiConfig';
 import { ShieldCheck, Plus, Package, Check, RefreshCw, Bell, Volume2, Wifi, Activity, Cpu, Zap } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
@@ -65,7 +66,7 @@ const AdminPage = () => {
 
     try {
       client = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
         reconnectDelay: 5000,
         onConnect: () => {
           setWsConnected(true);

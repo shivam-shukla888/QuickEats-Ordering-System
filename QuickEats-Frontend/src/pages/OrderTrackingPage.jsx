@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import LiveMap from '../components/LiveMap';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { API_BASE_URL } from '../config/apiConfig';
 import { Clock, CheckCircle2, ChefHat, Truck, Home, ArrowLeft, RefreshCw, PhoneCall, Star, Bike, MapPin, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
 
 const OrderTrackingPage = () => {
@@ -88,7 +89,7 @@ const OrderTrackingPage = () => {
     const setupWebSocket = () => {
       try {
         client = new Client({
-          webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+          webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
           reconnectDelay: 5000,
           heartbeatIncoming: 4000,
           heartbeatOutgoing: 4000,
