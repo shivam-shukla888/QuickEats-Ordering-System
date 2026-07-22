@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/agent")
-@CrossOrigin(origins = "*")
 public class AgentController {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentController.class);

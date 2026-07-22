@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/support")
-@CrossOrigin(origins = "*")
 public class SupportController {
 
     private static final Logger logger = LoggerFactory.getLogger(SupportController.class);

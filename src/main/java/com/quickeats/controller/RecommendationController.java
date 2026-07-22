@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/recommend")
-@CrossOrigin(origins = "*")
 public class RecommendationController {
 
     private static final Logger logger = LoggerFactory.getLogger(RecommendationController.class);

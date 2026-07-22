@@ -35,7 +35,13 @@ const LoginPage = () => {
       login(authData);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.status) {
+        setError(`Login failed (status ${err.response.status}). Please try again.`);
+      } else {
+        setError('Unable to connect to server. Please check your internet connection and try again.');
+      }
     } finally {
       setSubmitting(false);
     }

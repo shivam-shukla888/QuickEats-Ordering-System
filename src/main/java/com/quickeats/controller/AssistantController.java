@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/assistant")
-@CrossOrigin(origins = "*")
 public class AssistantController {
 
     private static final Logger logger = LoggerFactory.getLogger(AssistantController.class);
