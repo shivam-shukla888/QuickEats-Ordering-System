@@ -26,7 +26,7 @@ public class JwtUtil {
     @PostConstruct
     public void validateSecretKey() {
         if (secret == null || secret.trim().isEmpty() || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            throw new IllegalStateException("JWT_SECRET environment variable must be set with a secure 256-bit+ value");
+            throw new IllegalStateException("JWT_SECRET environment variable must be set with a secure 256-bit+ value for production deployment.");
         }
     }
 
