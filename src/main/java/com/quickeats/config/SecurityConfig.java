@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -18,8 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,30 +45,35 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+    /**
+     * Highest-priority servlet-level CorsFilter. 
+     * Runs BEFORE Spring Security's filter chain to ensure 
+     * CORS preflight (OPTIONS) requests are handled immediately
+     * and never blocked by security filters.
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public CorsFilter corsFilter() {
+        return new CorsFilter(corsConfigurationSource());
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        List<String> origins = new ArrayList<>(Arrays.asList(allowedOrigins.split(",")));
-        if (!origins.contains("https://quickeats-sandy.vercel.app")) {
-            origins.add("https://quickeats-sandy.vercel.app");
-        }
-        if (!origins.contains("http://localhost:5173")) {
-            origins.add("http://localhost:5173");
-        }
 
-        // Allowed Origin Patterns to support Vercel preview deploys & localhost
+        // Support all common origins
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:*",
                 "https://*.vercel.app",
                 "https://quickeats-sandy.vercel.app",
                 "https://*.onrender.com"
         ));
-        
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -80,18 +87,22 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // Allow ALL CORS preflight requests first
+                // Allow ALL CORS preflight OPTIONS requests
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                // Auth endpoints
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                // Public read endpoints
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/restaurants").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/search/**", "/api/search").permitAll()
+                // Public service endpoints
                 .requestMatchers("/api/ai/**").permitAll()
                 .requestMatchers("/api/agent/**").permitAll()
                 .requestMatchers("/api/recommend/**").permitAll()
                 .requestMatchers("/api/support/**").permitAll()
                 .requestMatchers("/api/assistant/**").permitAll()
                 .requestMatchers("/api/admin/**").permitAll()
+                // Infrastructure
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/error").permitAll()
