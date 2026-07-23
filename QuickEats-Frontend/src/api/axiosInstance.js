@@ -20,6 +20,8 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    const fullUrl = (config.baseURL || '') + (config.url || '');
+    console.log(`[Axios Outgoing Request] ${config.method?.toUpperCase()} ${fullUrl}`);
     return config;
   },
   (error) => Promise.reject(error)
