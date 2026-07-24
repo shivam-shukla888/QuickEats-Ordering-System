@@ -16,6 +16,11 @@ public class CreateOrderDTO {
     @Valid
     private List<OrderItemDTO> items;
 
+    private String deliveryAddress;
+    private String paymentMethod;
+    private Double tipAmount = 0.0;
+    private String instructions;
+
     public CreateOrderDTO() {}
 
     public CreateOrderDTO(Long restaurantId, List<OrderItemDTO> items) {
@@ -51,5 +56,37 @@ public class CreateOrderDTO {
 
     public void setItems(List<OrderItemDTO> items) {
         this.items = items;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Double getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(Double tipAmount) {
+        this.tipAmount = tipAmount;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
     }
 }

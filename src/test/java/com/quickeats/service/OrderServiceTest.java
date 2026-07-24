@@ -90,6 +90,36 @@ class OrderServiceTest {
     }
 
     @Test
+    void placeOrder_WithOptionalPayloadFields_PersistsAndReturnsMetadata() {
+        CreateOrderDTO createOrderDTO = new CreateOrderDTO();
+        createOrderDTO.setUserId(10L);
+        createOrderDTO.setRestaurantId(20L);
+        createOrderDTO.setDeliveryAddress("123 Tech Park, Suite 400");
+        createOrderDTO.setPaymentMethod("UPI");
+        createOrderDTO.setTipAmount(50.0);
+        createOrderDTO.setInstructions("Leave with guard");
+        OrderItemDTO item = new OrderItemDTO(100L, 1, 12.50, "Cheeseburger");
+        createOrderDTO.setItems(List.of(item));
+
+        when(userService.getUserById(10L)).thenReturn(Optional.of(sampleUser));
+        when(restaurantService.getRestaurantEntityById(20L)).thenReturn(Optional.of(sampleRestaurant));
+        when(menuRepository.findById(100L)).thenReturn(Optional.of(sampleMenu));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> {
+            Order o = inv.getArgument(0);
+            o.setId(1002L);
+            return o;
+        });
+
+        OrderResponseDTO responseDTO = orderService.placeOrder(createOrderDTO);
+
+        assertNotNull(responseDTO);
+        assertEquals("123 Tech Park, Suite 400", responseDTO.getDeliveryAddress());
+        assertEquals("UPI", responseDTO.getPaymentMethod());
+        assertEquals(50.0, responseDTO.getTipAmount());
+        assertEquals("Leave with guard", responseDTO.getInstructions());
+    }
+
+    @Test
     void placeOrder_PriceTamperingIgnored_UsesMenuPrice() {
         CreateOrderDTO createOrderDTO = new CreateOrderDTO();
         createOrderDTO.setUserId(10L);

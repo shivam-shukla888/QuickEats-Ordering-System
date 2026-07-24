@@ -14,12 +14,23 @@ public class OrderResponseDTO {
     private Double totalAmount;
     private LocalDateTime orderTime;
     private List<OrderItemDTO> items;
+    private String deliveryAddress;
+    private String paymentMethod;
+    private Double tipAmount;
+    private String instructions;
 
     public OrderResponseDTO() {}
 
     public OrderResponseDTO(Long id, Long userId, String userName, Long restaurantId, 
                            String restaurantName, String status, Double totalAmount, 
                            LocalDateTime orderTime, List<OrderItemDTO> items) {
+        this(id, userId, userName, restaurantId, restaurantName, status, totalAmount, orderTime, items, null, "ONLINE", 0.0, null);
+    }
+
+    public OrderResponseDTO(Long id, Long userId, String userName, Long restaurantId, 
+                           String restaurantName, String status, Double totalAmount, 
+                           LocalDateTime orderTime, List<OrderItemDTO> items,
+                           String deliveryAddress, String paymentMethod, Double tipAmount, String instructions) {
         this.id = id;
         this.userId = userId;
         this.userName = userName;
@@ -29,6 +40,10 @@ public class OrderResponseDTO {
         this.totalAmount = totalAmount;
         this.orderTime = orderTime;
         this.items = items;
+        this.deliveryAddress = deliveryAddress;
+        this.paymentMethod = paymentMethod;
+        this.tipAmount = tipAmount;
+        this.instructions = instructions;
     }
 
     public Long getId() {
@@ -101,5 +116,37 @@ public class OrderResponseDTO {
 
     public void setItems(List<OrderItemDTO> items) {
         this.items = items;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Double getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(Double tipAmount) {
+        this.tipAmount = tipAmount;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
     }
 }

@@ -40,6 +40,18 @@ public class Order {
     @Column(columnDefinition = "TEXT")
     private String orderItems;
 
+    @Column(columnDefinition = "TEXT")
+    private String deliveryAddress;
+
+    @Column
+    private String paymentMethod;
+
+    @Column
+    private Double tipAmount = 0.0;
+
+    @Column(columnDefinition = "TEXT")
+    private String deliveryInstructions;
+
     @PrePersist
     protected void onCreate() {
         orderTime = LocalDateTime.now();
@@ -109,5 +121,37 @@ public class Order {
 
     public void setOrderItems(String orderItems) {
         this.orderItems = orderItems;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Double getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(Double tipAmount) {
+        this.tipAmount = tipAmount;
+    }
+
+    public String getDeliveryInstructions() {
+        return deliveryInstructions;
+    }
+
+    public void setDeliveryInstructions(String deliveryInstructions) {
+        this.deliveryInstructions = deliveryInstructions;
     }
 }

@@ -85,6 +85,18 @@ public class OrderService {
 
             Order order = new Order(user, restaurant, totalAmount, orderItemsJson);
             order.setStatus("PENDING");
+            if (createOrderDTO.getDeliveryAddress() != null) {
+                order.setDeliveryAddress(createOrderDTO.getDeliveryAddress());
+            }
+            if (createOrderDTO.getPaymentMethod() != null) {
+                order.setPaymentMethod(createOrderDTO.getPaymentMethod());
+            }
+            if (createOrderDTO.getTipAmount() != null) {
+                order.setTipAmount(createOrderDTO.getTipAmount());
+            }
+            if (createOrderDTO.getInstructions() != null) {
+                order.setDeliveryInstructions(createOrderDTO.getInstructions());
+            }
 
             Order savedOrder = orderRepository.save(order);
             OrderResponseDTO dto = convertToOrderResponseDTO(savedOrder, createOrderDTO.getItems());
@@ -285,7 +297,11 @@ public class OrderService {
             order.getStatus(),
             order.getTotalAmount(),
             order.getOrderTime(),
-            items
+            items,
+            order.getDeliveryAddress(),
+            order.getPaymentMethod(),
+            order.getTipAmount(),
+            order.getDeliveryInstructions()
         );
     }
 

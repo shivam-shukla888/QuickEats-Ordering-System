@@ -328,9 +328,12 @@ const OrderTrackingPage = () => {
           <MapPin className="w-5 h-5 text-orange-600 shrink-0" />
           <div>
             <p className="text-xs font-bold text-slate-900">Delivering To ({deliveryLocation?.tag || 'Home'})</p>
-            <p className="text-xs text-slate-600">{deliveryLocation?.address}</p>
-            {deliveryLocation?.landmark && (
-              <p className="text-[10px] text-orange-700 font-bold mt-0.5">Landmark: {deliveryLocation.landmark}</p>
+            <p className="text-xs text-slate-600">{order?.deliveryAddress || deliveryLocation?.address}</p>
+            {order?.paymentMethod && (
+              <p className="text-[11px] text-slate-500 font-semibold mt-1">Payment Method: <span className="font-bold text-slate-800">{order.paymentMethod}</span> {order?.tipAmount > 0 && <span className="text-orange-600 font-bold">• Rider Tip: ₹{order.tipAmount.toFixed(2)}</span>}</p>
+            )}
+            {order?.instructions && (
+              <p className="text-[11px] text-orange-700 font-bold mt-0.5">Instructions: {order.instructions}</p>
             )}
           </div>
         </div>
