@@ -97,6 +97,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/search/**", "/api/search").permitAll()
                 // Public service endpoints
                 .requestMatchers("/api/ai/**").permitAll()
+                .requestMatchers("/api/chat/**").permitAll()
+                .requestMatchers("/api/recommendations/**").permitAll()
                 .requestMatchers("/api/agent/**").permitAll()
                 .requestMatchers("/api/recommend/**").permitAll()
                 .requestMatchers("/api/support/**").permitAll()

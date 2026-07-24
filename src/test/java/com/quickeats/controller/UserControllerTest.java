@@ -28,10 +28,14 @@ class UserControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private com.quickeats.repository.RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
+        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -44,15 +48,15 @@ class UserControllerTest {
                 "role", "CUSTOMER"
         );
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.email", is("alice@example.com")))
-                .andExpect(jsonPath("$.name", is("Alice Walker")))
-                .andExpect(jsonPath("$.role", is("CUSTOMER")))
-                .andExpect(jsonPath("$.password").doesNotExist());
+                .andExpect(jsonPath("$.user.id").exists())
+                .andExpect(jsonPath("$.user.email", is("alice@example.com")))
+                .andExpect(jsonPath("$.user.name", is("Alice Walker")))
+                .andExpect(jsonPath("$.user.role", is("CUSTOMER")))
+                .andExpect(jsonPath("$.accessToken").exists());
     }
 
     @Test
@@ -64,7 +68,7 @@ class UserControllerTest {
                 "role", "CUSTOMER"
         );
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest1)))
                 .andExpect(status().isCreated());
@@ -76,7 +80,7 @@ class UserControllerTest {
                 "role", "CUSTOMER"
         );
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest2)))
                 .andExpect(status().isBadRequest())
@@ -93,14 +97,14 @@ class UserControllerTest {
                 "role", "CUSTOMER"
         );
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated());
 
         AuthRequestDTO loginRequest = new AuthRequestDTO("bob@example.com", "mySecretPass");
 
-        mockMvc.perform(post("/api/users/login")
+        mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())

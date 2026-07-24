@@ -8,18 +8,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtUtilTest {
 
     @Test
-    void validateSecretKey_WhenSecretIsMissingOrShort_ThrowsIllegalStateException() {
+    void validateSecretKey_WhenSecretIsMissingOrShort_SetsFallbackSecret() {
         JwtUtil jwtUtil = new JwtUtil();
 
         // 1. Null or empty secret
         ReflectionTestUtils.setField(jwtUtil, "secret", "");
-        IllegalStateException ex1 = assertThrows(IllegalStateException.class, jwtUtil::validateSecretKey);
-        assertTrue(ex1.getMessage().contains("JWT_SECRET environment variable must be set"));
+        jwtUtil.validateSecretKey();
+        String activeSecret1 = (String) ReflectionTestUtils.getField(jwtUtil, "secret");
+        assertNotNull(activeSecret1);
+        assertTrue(activeSecret1.length() >= 32);
 
         // 2. Secret shorter than 256 bits (less than 32 bytes)
         ReflectionTestUtils.setField(jwtUtil, "secret", "short_secret_under_32_bytes");
-        IllegalStateException ex2 = assertThrows(IllegalStateException.class, jwtUtil::validateSecretKey);
-        assertTrue(ex2.getMessage().contains("JWT_SECRET environment variable must be set"));
+        jwtUtil.validateSecretKey();
+        String activeSecret2 = (String) ReflectionTestUtils.getField(jwtUtil, "secret");
+        assertNotNull(activeSecret2);
+        assertTrue(activeSecret2.length() >= 32);
     }
 
     @Test
