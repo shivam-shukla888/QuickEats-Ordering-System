@@ -100,6 +100,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('quickeats_token');
     localStorage.removeItem('quickeats_refresh_token');
     localStorage.removeItem('quickeats_user');
+    localStorage.removeItem('quickeats_cart');
+    localStorage.removeItem('quickeats_cart_restaurant');
   };
 
   return (

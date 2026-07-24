@@ -100,6 +100,8 @@ export const CartProvider = ({ children }) => {
     setCouponDiscount(0);
     setDeliveryTip(0);
     setDeliveryInstructions([]);
+    localStorage.removeItem('quickeats_cart');
+    localStorage.removeItem('quickeats_cart_restaurant');
   };
 
   // Indian Coupon Logic
