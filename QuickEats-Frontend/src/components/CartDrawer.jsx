@@ -71,7 +71,8 @@ const CartDrawer = () => {
 
   const bill = calculateBill();
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!couponInput.trim()) return;
     const result = applyCouponCode(couponInput.trim());
     setCouponMessage(result.message);
@@ -105,7 +106,7 @@ const CartDrawer = () => {
           price: item.price,
           itemName: item.itemName || item.name
         })),
-        deliveryAddress: deliveryLocation ? `${deliveryLocation.address}, ${deliveryLocation.city}` : 'Default Address',
+        deliveryAddress: deliveryLocation ? `${deliveryLocation.address}${deliveryLocation.landmark ? ', ' + deliveryLocation.landmark : ''}` : 'Default Address',
         paymentMethod: paymentMethod || 'ONLINE',
         tipAmount: deliveryTip || 0,
         instructions: deliveryInstructions.join(',')
@@ -384,7 +385,7 @@ const CartDrawer = () => {
                 </div>
 
                 <button
-                  onClick={handleOpenPaymentModal}
+                  onClick={handleProceedToPayment}
                   className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 transition-all"
                 >
                   <span>Select Payment Method • ₹{bill.grandTotal?.toFixed(2)}</span>
@@ -401,7 +402,7 @@ const CartDrawer = () => {
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
-        onConfirmPayment={handleConfirmOrder}
+        onConfirmPayment={handleConfirmOrderPlacement}
         submitting={submitting}
       />
     </>
