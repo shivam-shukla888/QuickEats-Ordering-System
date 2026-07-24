@@ -146,7 +146,7 @@ const OrderTrackingPage = () => {
           if (order?.status !== 'DELIVERED') {
             fetchOrderDetails();
           }
-        }, 10000);
+        }, 4000);
       }
     };
 

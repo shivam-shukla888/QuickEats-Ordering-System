@@ -119,19 +119,44 @@ public class AiAssistantService {
     }
 
     private ChatResponseDTO createFallbackResponse(String userMessage, List<Menu> allMenus) {
+        if (allMenus == null || allMenus.isEmpty()) {
+            return new ChatResponseDTO("I'm here to help! Feel free to explore our featured restaurants on the main catalog.", Collections.emptyList());
+        }
+
         String msgLower = userMessage.toLowerCase();
         List<MenuResponseDTO> matches = allMenus.stream()
-                .filter(m -> msgLower.contains("spicy") && Boolean.TRUE.equals(m.getSpiceLevel() != null && m.getSpiceLevel().name().equalsIgnoreCase("HOT"))
-                        || msgLower.contains("veg") && Boolean.TRUE.equals(m.getIsVeg())
-                        || msgLower.contains(m.getItemName().toLowerCase()))
+                .filter(m -> {
+                    String name = m.getItemName() != null ? m.getItemName().toLowerCase() : "";
+                    String desc = m.getDescription() != null ? m.getDescription().toLowerCase() : "";
+                    String tags = m.getTags() != null ? m.getTags().toLowerCase() : "";
+                    String cuisine = (m.getRestaurant() != null && m.getRestaurant().getCuisineType() != null)
+                            ? m.getRestaurant().getCuisineType().toLowerCase() : "";
+
+                    boolean vegMatch = msgLower.contains("veg") && Boolean.TRUE.equals(m.getIsVeg());
+                    boolean spicyMatch = msgLower.contains("spicy") && m.getSpiceLevel() != null && m.getSpiceLevel().name().equalsIgnoreCase("HOT");
+                    boolean nameMatch = msgLower.contains(name) || name.contains(msgLower);
+                    boolean keywordMatch = msgLower.contains("chicken") && name.contains("chicken")
+                            || msgLower.contains("paneer") && name.contains("paneer")
+                            || msgLower.contains("biryani") && name.contains("biryani")
+                            || msgLower.contains("butter") && name.contains("butter")
+                            || msgLower.contains("north indian") && (cuisine.contains("indian") || name.contains("chicken") || name.contains("paneer") || name.contains("dal"))
+                            || msgLower.contains("dinner") || msgLower.contains("special") || msgLower.contains("starter");
+
+                    return vegMatch || spicyMatch || nameMatch || keywordMatch;
+                })
                 .limit(3)
                 .map(MenuResponseDTO::fromEntity)
                 .collect(Collectors.toList());
 
-        String reply = matches.isEmpty()
-                ? "I'm here to help! Try exploring our featured restaurants on the home page or search by cuisine."
-                : "Based on your request, here are top recommendations from our catalog!";
+        // If no specific keyword matched, default to top 3 items from catalog so UI never renders empty dish cards
+        if (matches.isEmpty()) {
+            matches = allMenus.stream()
+                    .limit(3)
+                    .map(MenuResponseDTO::fromEntity)
+                    .collect(Collectors.toList());
+        }
 
+        String reply = String.format("Based on your search for \"%s\", here are top-rated recommendations from our menu!", userMessage.trim());
         return new ChatResponseDTO(reply, matches);
     }
 }

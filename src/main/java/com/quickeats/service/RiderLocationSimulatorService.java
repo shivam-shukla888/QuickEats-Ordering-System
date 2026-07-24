@@ -37,27 +37,46 @@ public class RiderLocationSimulatorService {
     @Scheduled(fixedRate = 3000)
     public void simulateRiderMovement() {
         List<Order> activeOrders = orderRepository.findAll().stream()
-                .filter(o -> "OUT_FOR_DELIVERY".equalsIgnoreCase(o.getStatus()) || "PREPARING".equalsIgnoreCase(o.getStatus()) || "PENDING".equalsIgnoreCase(o.getStatus()))
+                .filter(o -> !"CANCELLED".equalsIgnoreCase(o.getStatus()))
                 .toList();
 
         for (Order order : activeOrders) {
             double currentProgress = orderProgressMap.getOrDefault(order.getId(), 0.0);
 
-            // Increment progress by 0.05 per interval
-            currentProgress += 0.05;
-            if (currentProgress > 1.0) {
-                currentProgress = 0.0; // Reset loop for continuous simulation
+            if ("DELIVERED".equalsIgnoreCase(order.getStatus())) {
+                continue;
             }
 
+            // Increment progress by 0.05 per 3-second tick (~60s full cycle)
+            currentProgress += 0.05;
+            if (currentProgress > 1.0) {
+                currentProgress = 1.0;
+            }
             orderProgressMap.put(order.getId(), currentProgress);
 
-            // Interpolate position
+            // Calculate auto-progressed order status
+            String targetStatus = order.getStatus();
+            if (currentProgress >= 0.95) {
+                targetStatus = "DELIVERED";
+            } else if (currentProgress >= 0.50) {
+                targetStatus = "OUT_FOR_DELIVERY";
+            } else if (currentProgress >= 0.20) {
+                targetStatus = "PREPARING";
+            }
+
+            if (!targetStatus.equalsIgnoreCase(order.getStatus())) {
+                order.setStatus(targetStatus);
+                orderRepository.save(order);
+                logger.info("Auto-progressed order #{} status to '{}'", order.getId(), targetStatus);
+            }
+
+            // Interpolate GPS coordinates
             double currentLat = START_LAT + (END_LAT - START_LAT) * currentProgress;
             double currentLng = START_LNG + (END_LNG - START_LNG) * currentProgress;
             int eta = Math.max(1, (int) Math.round((1.0 - currentProgress) * 20));
 
             orderService.broadcastStatusUpdate(order, eta, currentLat, currentLng);
-            logger.debug("Simulated rider position for order #{}: ({}, {})", order.getId(), currentLat, currentLng);
+            logger.debug("Simulated rider position & status for order #{}: status={}, ({}, {})", order.getId(), targetStatus, currentLat, currentLng);
         }
     }
 
