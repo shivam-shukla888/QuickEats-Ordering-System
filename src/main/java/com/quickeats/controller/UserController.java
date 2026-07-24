@@ -35,6 +35,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+        verifyUserOwnershipOrAdmin(id);
         User user = userService.getUserById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return ResponseEntity.ok(UserResponseDTO.fromEntity(user));

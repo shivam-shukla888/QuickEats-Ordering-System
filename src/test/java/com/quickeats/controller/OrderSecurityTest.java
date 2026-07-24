@@ -89,6 +89,13 @@ class OrderSecurityTest {
     }
 
     @Test
+    void getOrderById_OtherUser_Returns403Forbidden() throws Exception {
+        mockMvc.perform(get("/api/orders/" + sampleOrder.getId())
+                .header("Authorization", "Bearer " + otherCustomerToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void updateOrderStatus_PlainCustomer_Returns403Forbidden() throws Exception {
         Map<String, String> statusReq = Map.of("status", "PREPARING");
 

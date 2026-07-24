@@ -96,6 +96,13 @@ class UserSecurityTest {
     }
 
     @Test
+    void getUserById_OtherUser_Returns403Forbidden() throws Exception {
+        mockMvc.perform(get("/api/users/" + otherCustomerUser.getId())
+                .header("Authorization", "Bearer " + customerToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void deleteUser_OtherUser_Returns403Forbidden() throws Exception {
         mockMvc.perform(delete("/api/users/" + otherCustomerUser.getId())
                 .header("Authorization", "Bearer " + customerToken))

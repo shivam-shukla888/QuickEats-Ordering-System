@@ -49,7 +49,9 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getOrderResponseDTO(id));
+        OrderResponseDTO dto = orderService.getOrderResponseDTO(id);
+        verifyUserOwnershipOrAdmin(dto.getUserId());
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/my-orders")
