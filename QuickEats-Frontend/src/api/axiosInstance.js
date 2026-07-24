@@ -9,7 +9,7 @@ export const setInMemoryToken = (token) => {
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 45000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -45,18 +45,30 @@ const processQueue = (error, token = null) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const originalRequest = error.config;
+
+    // Retry once on cold-start timeout or network connectivity glitch
+    if (
+      originalRequest &&
+      !originalRequest._retryColdStart &&
+      (error.code === 'ECONNABORTED' || !error.response || error.response?.status === 503)
+    ) {
+      originalRequest._retryColdStart = true;
+      console.warn('[Axios Interceptor] Cold-start or network glitch detected. Retrying request once...');
+      await new Promise((res) => setTimeout(res, 2000));
+      return axiosInstance(originalRequest);
+    }
+
     // Normalize custom error message for UI consumption
     if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-      error.customMessage = 'Request timed out after 15 seconds. Please try again.';
+      error.customMessage = 'Server taking longer than expected to respond (cold start). Please retry in a moment.';
     } else if (!error.response) {
-      error.customMessage = 'Network error or backend server unreachable. Please check your internet connection.';
+      error.customMessage = 'Network error or backend server unreachable. Please check your connection or try again.';
     } else if (error.response?.data?.message) {
       error.customMessage = error.response.data.message;
     } else {
       error.customMessage = error.message || 'An unexpected error occurred.';
     }
-
-    const originalRequest = error.config;
 
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
