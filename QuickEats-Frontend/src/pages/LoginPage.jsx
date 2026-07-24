@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { loginUser } from '../api/authApi';
+import { loginUser, registerUser } from '../api/authApi';
 import { useAuth } from '../context/AuthContext';
-import { Utensils, Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Utensils, Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff, Sparkles, Zap } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -54,6 +54,41 @@ const LoginPage = () => {
         setError(`Login failed (status ${err.response.status}). Please try again.`);
       } else {
         setError('Unable to connect to server. Please check your internet connection and try again.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDemoLogin = async (demoEmail, demoPassword, role = 'CUSTOMER', name = 'Demo User') => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setSubmitting(true);
+    setError('');
+
+    try {
+      let authData;
+      try {
+        authData = await loginUser({ email: demoEmail, password: demoPassword });
+      } catch (loginErr) {
+        authData = await registerUser({
+          name,
+          email: demoEmail,
+          password: demoPassword,
+          role,
+          address: '123 Main Street',
+          phone: '9876543210',
+        });
+      }
+      login(authData);
+      navigate(from, { replace: true });
+    } catch (err) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.status) {
+        setError(`Authentication failed (status ${err.response.status}). Please try again.`);
+      } else {
+        setError('Direct authentication failed. Please check server connection.');
       }
     } finally {
       setSubmitting(false);
@@ -196,6 +231,89 @@ const LoginPage = () => {
             <span style={{ fontSize: '12px', fontWeight: 600, color: '#b91c1c', lineHeight: 1.5 }}>{error}</span>
           </div>
         )}
+
+        {/* Direct Authentication Quick Buttons */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', textAlign: 'center' }}>
+            ⚡ Direct Quick Login
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('user@quickeats.com', 'password123', 'CUSTOMER', 'Demo Customer')}
+              disabled={submitting}
+              style={{
+                padding: '10px 14px',
+                background: '#f8fafc',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#334155',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.target.style.borderColor = '#ea580c';
+                  e.target.style.color = '#ea580c';
+                  e.target.style.background = '#fff7ed';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!submitting) {
+                  e.target.style.borderColor = '#e2e8f0';
+                  e.target.style.color = '#334155';
+                  e.target.style.background = '#f8fafc';
+                }
+              }}
+            >
+              <Zap style={{ width: '14px', height: '14px', color: '#ea580c' }} />
+              Customer Access
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('admin@quickeats.com', 'admin123', 'ADMIN', 'Demo Admin')}
+              disabled={submitting}
+              style={{
+                padding: '10px 14px',
+                background: '#f8fafc',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#334155',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.target.style.borderColor = '#ea580c';
+                  e.target.style.color = '#ea580c';
+                  e.target.style.background = '#fff7ed';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!submitting) {
+                  e.target.style.borderColor = '#e2e8f0';
+                  e.target.style.color = '#334155';
+                  e.target.style.background = '#f8fafc';
+                }
+              }}
+            >
+              <Zap style={{ width: '14px', height: '14px', color: '#ea580c' }} />
+              Admin Access
+            </button>
+          </div>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>

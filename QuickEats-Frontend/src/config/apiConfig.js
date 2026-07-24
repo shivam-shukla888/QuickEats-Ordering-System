@@ -8,13 +8,18 @@ const rawUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL
  */
 const sanitizeUrl = (url) => {
   if (!url) return 'https://quickeats-ordering-system.onrender.com';
-  let cleaned = url.trim();
-  // Fix malformed protocol like "https:/quickeats..." -> "https://quickeats..."
-  if (cleaned.startsWith('https:/') && !cleaned.startsWith('https://')) {
+  let cleaned = String(url).trim();
+
+  // Extract pure http(s) URL if env var contains markdown table text or extra characters
+  const match = cleaned.match(/(https?:\/\/[^\s`|\>"]+)/i);
+  if (match) {
+    cleaned = match[1];
+  } else if (cleaned.startsWith('https:/') && !cleaned.startsWith('https://')) {
     cleaned = cleaned.replace('https:/', 'https://');
   } else if (cleaned.startsWith('http:/') && !cleaned.startsWith('http://')) {
     cleaned = cleaned.replace('http:/', 'http://');
   }
+
   // Strip trailing slashes
   cleaned = cleaned.replace(/\/+$/, '');
   return cleaned;

@@ -84,19 +84,19 @@ const OrderHistoryPage = () => {
     <div className="max-w-4xl mx-auto space-y-8 pb-16">
       
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white p-8 rounded-3xl shadow-xl flex items-center justify-between border border-slate-800">
+      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex items-center justify-between gap-4 border border-slate-800">
         <div className="space-y-2">
-          <span className="bg-emerald-500/10 text-emerald-400 text-xs font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 border border-emerald-500/20">
+          <span className="bg-emerald-500/10 text-emerald-400 text-xs font-extrabold px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 border border-emerald-500/20">
             <ShoppingBag className="w-3.5 h-3.5" /> Order History
           </span>
-          <h1 className="text-3xl font-extrabold tracking-tight font-outfit">Your QuickEats Orders</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-outfit">Your QuickEats Orders</h1>
         </div>
         <button
           onClick={fetchOrders}
-          className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md transition-colors"
+          className="p-2.5 sm:p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md transition-colors shrink-0"
           title="Refresh Orders"
         >
-          <RefreshCw className="w-5 h-5" />
+          <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
 

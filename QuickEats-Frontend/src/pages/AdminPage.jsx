@@ -201,9 +201,9 @@ const AdminPage = () => {
     <div className="max-w-6xl mx-auto space-y-8 pb-16">
       
       {/* Admin Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="bg-orange-500/20 text-orange-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 border border-orange-500/30">
               <ShieldCheck className="w-3.5 h-3.5" />
               Admin / Owner Control Panel
@@ -215,7 +215,7 @@ const AdminPage = () => {
               {wsConnected ? 'STOMP Admin Live' : 'Connecting...'}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Real-Time Management Dashboard</h1>
+          <h1 className="text-xl sm:text-3xl font-black tracking-tight">Real-Time Management Dashboard</h1>
         </div>
 
         <div className="flex items-center gap-3">
@@ -232,10 +232,10 @@ const AdminPage = () => {
 
           <button
             onClick={fetchAdminData}
-            className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md transition-colors"
+            className="p-2.5 sm:p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md transition-colors shrink-0"
             title="Refresh Data"
           >
-            <RefreshCw className="w-5 h-5" />
+            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

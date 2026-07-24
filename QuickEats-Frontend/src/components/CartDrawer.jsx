@@ -108,11 +108,11 @@ const CartDrawer = () => {
           onClick={() => setIsCartOpen(false)}
         />
 
-        <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-          <div className="pointer-events-auto w-screen max-w-md bg-white shadow-2xl flex flex-col">
+        <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-10">
+          <div className="pointer-events-auto w-screen max-w-full sm:max-w-md bg-white shadow-2xl flex flex-col">
             
             {/* Header */}
-            <div className="p-5 bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white flex items-center justify-between">
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <ShoppingBag className="w-6 h-6 text-orange-400" />
                 <div>
@@ -122,14 +122,14 @@ const CartDrawer = () => {
               </div>
               <button
                 onClick={() => setIsCartOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Cart Body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold rounded-xl">
                   {error}
@@ -177,7 +177,7 @@ const CartDrawer = () => {
                   </div>
 
                   {/* AI Smart Order Recommendations */}
-                  <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl space-y-2.5">
+                  <div className="p-3.5 sm:p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl space-y-2.5">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
                       <Sparkles className="w-4 h-4 text-orange-600 animate-pulse" />
                       <span>Frequently Ordered Together</span>
@@ -342,7 +342,7 @@ const CartDrawer = () => {
 
             {/* Footer / Checkout CTA */}
             {cartItems.length > 0 && (
-              <div className="p-5 border-t border-slate-200 bg-white space-y-3">
+              <div className="p-4 sm:p-5 pb-8 sm:pb-5 border-t border-slate-200 bg-white space-y-3">
                 <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                   <MapPin className="w-4 h-4 text-orange-600 shrink-0" />
                   <div className="truncate">

@@ -23,6 +23,12 @@ const AiChatWidget = () => {
   };
 
   useEffect(() => {
+    const handleOpenAiChat = () => setIsOpen(true);
+    window.addEventListener('open-ai-chat', handleOpenAiChat);
+    return () => window.removeEventListener('open-ai-chat', handleOpenAiChat);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       scrollToBottom();
     }
@@ -67,17 +73,19 @@ const AiChatWidget = () => {
       {/* Floating Launcher Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-orange-600 to-amber-500 text-white rounded-full shadow-2xl hover:scale-110 transition-all group flex items-center gap-2 border border-white/20"
+        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 p-3.5 sm:p-4 bg-gradient-to-r from-orange-600 to-amber-500 text-white rounded-full shadow-2xl hover:scale-110 transition-all group flex items-center gap-2 border border-white/20"
+        aria-label="Ask QuickEats AI"
       >
-        <Sparkles className="w-6 h-6 animate-pulse" />
-        <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 font-bold text-xs whitespace-nowrap pr-1">
+        <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
+        <span className="max-w-0 sm:group-hover:max-w-xs overflow-hidden transition-all duration-300 font-bold text-xs whitespace-nowrap pr-1">
           Ask QuickEats AI
         </span>
       </button>
 
       {/* Slide-Up Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] h-[520px] bg-white rounded-3xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-6 z-50 w-full sm:w-96 sm:max-w-[calc(100vw-3rem)] h-full sm:h-[520px] bg-white sm:rounded-3xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
+
           
           {/* Header */}
           <div className="p-4 bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white flex items-center justify-between">

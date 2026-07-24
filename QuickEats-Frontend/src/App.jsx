@@ -7,6 +7,8 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import AiChatWidget from './components/AiChatWidget';
+import MobileBottomNav from './components/MobileBottomNav';
+import MobileCartBanner from './components/MobileCartBanner';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import HomePage from './pages/HomePage';
@@ -45,8 +47,10 @@ const AppContent = () => {
       <Navbar />
       <CartDrawer />
       <AiChatWidget />
+      <MobileCartBanner />
+      <MobileBottomNav />
       
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-8 pb-24 md:pb-8">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/restaurant/:id" element={<RestaurantDetailPage />} />

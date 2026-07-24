@@ -114,25 +114,30 @@ const HomePage = () => {
     setDishResults([]);
   };
 
+  const handleCuisineSelect = (cuisine) => {
+    setSelectedCuisine(cuisine);
+    setPage(0);
+  };
+
   return (
-    <div className="space-y-10 pb-12">
+    <div className="space-y-8 sm:space-y-10 pb-12">
       
       {/* Hero Section with AI Search */}
-      <section className="relative rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white p-8 sm:p-14 overflow-hidden shadow-xl border border-slate-800">
+      <section className="relative rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white p-6 sm:p-12 lg:p-14 overflow-hidden shadow-xl border border-slate-800">
         <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-emerald-600/20 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="max-w-2xl space-y-6 relative z-10">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-3.5 py-1.5 rounded-full">
+        <div className="max-w-2xl space-y-4 sm:space-y-6 relative z-10">
+          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full">
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI-Powered Culinary Search</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-none text-white font-outfit">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white font-outfit">
             Craving something? <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Ask QuickEats AI.</span>
           </h1>
 
-          <p className="text-slate-300 text-sm sm:text-base font-medium">
+          <p className="text-slate-300 text-xs sm:text-base font-medium">
             Try searching naturally like <span className="text-emerald-300 font-semibold">"spicy chinese under 300"</span>, <span className="text-emerald-300 font-semibold">"pure veg paneer"</span>, or <span className="text-emerald-300 font-semibold">"light healthy salad"</span>!
           </p>
 
@@ -145,7 +150,7 @@ const HomePage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder='Search dishes (e.g. "spicy chicken biryani under 15")...'
-                className="w-full pl-12 pr-12 py-3.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-inner"
+                className="w-full pl-12 pr-12 py-3 sm:py-3.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-inner"
               />
               {searchQuery && (
                 <button
@@ -164,7 +169,7 @@ const HomePage = () => {
       {!isAiSearch && cuisines.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-orange-600" />
               Browse by Cuisine
             </h2>
@@ -178,10 +183,10 @@ const HomePage = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
             <button
               onClick={() => handleCuisineSelect('')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 snap-start ${
                 selectedCuisine === ''
                   ? 'bg-slate-900 text-white shadow-md'
                   : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -193,7 +198,7 @@ const HomePage = () => {
               <button
                 key={cuisine}
                 onClick={() => handleCuisineSelect(cuisine)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 snap-start ${
                   selectedCuisine === cuisine
                     ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -224,8 +229,8 @@ const HomePage = () => {
 
       {/* Content Section: Dish Cards (AI Search) OR Restaurant Cards */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             {isAiSearch
               ? 'Dishes Found'
               : selectedCuisine
@@ -259,7 +264,7 @@ const HomePage = () => {
               <p className="text-xs text-slate-400 mt-1">Try rephrasing your search or checking price filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {dishResults.map((dish) => (
                 <div key={dish.id} className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all">
                   <div className="space-y-2">
@@ -312,7 +317,7 @@ const HomePage = () => {
               <p className="text-xs text-slate-400 mt-1">Try clearing your filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {restaurants.map((restaurant) => (
                 <RestaurantCard key={restaurant.id} restaurant={restaurant} />
               ))}

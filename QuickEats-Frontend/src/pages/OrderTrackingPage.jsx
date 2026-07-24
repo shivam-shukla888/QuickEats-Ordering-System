@@ -207,23 +207,23 @@ const OrderTrackingPage = () => {
       </div>
 
       {/* Header Card */}
-      <div className="bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white rounded-3xl p-8 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-orange-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 relative overflow-hidden">
         <div className="space-y-2 relative z-10">
           <span className="bg-orange-500/20 border border-orange-500/30 text-orange-400 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
             Order #{order.id}
           </span>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight">Live Real-Time Delivery</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">Live Real-Time Delivery</h1>
           <p className="text-xs text-slate-300">From <span className="text-white font-bold">{order.restaurantName}</span></p>
         </div>
 
         {/* Live ETA Card */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl flex items-center gap-4 shrink-0 relative z-10">
-          <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-black text-xl shadow-lg">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 sm:p-4 rounded-2xl flex items-center gap-3 sm:gap-4 shrink-0 relative z-10 w-full sm:w-auto">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-black text-lg sm:text-xl shadow-lg shrink-0">
             {order?.status === 'DELIVERED' ? '0' : etaMinutes}
           </div>
           <div>
-            <p className="text-xs text-slate-300 font-bold uppercase tracking-wider">Estimated Arrival</p>
-            <p className="text-base font-black text-white">
+            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider">Estimated Arrival</p>
+            <p className="text-sm sm:text-base font-black text-white">
               {order?.status === 'DELIVERED' ? 'Arrived & Delivered!' : `${etaMinutes} Mins`}
             </p>
           </div>
@@ -231,28 +231,28 @@ const OrderTrackingPage = () => {
       </div>
 
       {/* Live Swiggy/Zomato Delivery Partner Card */}
-      <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white font-bold text-2xl shadow-inner">
-            <Bike className="w-8 h-8" />
+      <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-5 sm:p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+        <div className="flex items-center gap-3.5 sm:gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-inner shrink-0">
+            <Bike className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-black tracking-tight">Ramesh Kumar</h3>
+              <h3 className="text-base sm:text-lg font-black tracking-tight">Ramesh Kumar</h3>
               <span className="bg-white/20 text-white font-bold text-[10px] px-2 py-0.5 rounded-md flex items-center gap-1">
                 <Star className="w-3 h-3 fill-amber-300 text-amber-300" /> 4.9
               </span>
             </div>
-            <p className="text-xs text-orange-100 font-medium flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-300" />
-              Verified Delivery Partner • TVS Jupiter (DL 01 AB 1234)
+            <p className="text-[11px] sm:text-xs text-orange-100 font-medium flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span>Verified Delivery Partner • TVS Jupiter</span>
             </p>
           </div>
         </div>
 
         <a
           href="tel:+919876543210"
-          className="px-5 py-3 bg-white text-orange-700 hover:bg-orange-50 font-black text-xs rounded-2xl shadow-md flex items-center gap-2 transition-all shrink-0"
+          className="w-full sm:w-auto py-2.5 sm:py-3 px-5 bg-white text-orange-700 hover:bg-orange-50 font-black text-xs rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all shrink-0 active:scale-95"
         >
           <PhoneCall className="w-4 h-4 text-orange-600" />
           <span>Call Rider</span>
