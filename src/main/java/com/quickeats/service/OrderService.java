@@ -168,8 +168,9 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
-        if ("DELIVERED".equalsIgnoreCase(order.getStatus())) {
-            throw new IllegalStateException("Delivered orders cannot be cancelled.");
+        String currentStatus = order.getStatus() != null ? order.getStatus().toUpperCase() : "";
+        if (!"PENDING".equals(currentStatus) && !"PREPARING".equals(currentStatus)) {
+            throw new IllegalStateException("Only PENDING or PREPARING orders can be cancelled.");
         }
 
         order.setStatus("CANCELLED");

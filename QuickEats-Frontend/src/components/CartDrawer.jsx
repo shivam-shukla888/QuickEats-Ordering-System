@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { placeOrder } from '../api/orderApi';
+import axiosInstance from '../api/axiosInstance';
 import PaymentModal from './PaymentModal';
 import { X, ShoppingBag, Plus, Minus, Trash2, MapPin, ArrowRight, Tag, HeartHandshake, Check, Sparkles } from 'lucide-react';
 
@@ -35,52 +36,83 @@ const CartDrawer = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [aiRecommendations, setAiRecommendations] = useState([]);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchUpsells = async () => {
+      try {
+        const targetRestId = cartRestaurant?.id || 1;
+        const res = await axiosInstance.get(`/api/restaurants/${targetRestId}`);
+        if (isMounted && res.data?.menuItems && res.data.menuItems.length > 0) {
+          const items = res.data.menuItems.slice(0, 3).map(m => ({
+            menuId: m.id,
+            itemName: m.itemName,
+            price: m.price,
+            icon: m.isVeg ? '🍮' : '🍲'
+          }));
+          setAiRecommendations(items);
+        }
+      } catch (err) {
+        // Fallback gracefully
+      }
+    };
+    if (isCartOpen) {
+      fetchUpsells();
+    }
+    return () => { isMounted = false; };
+  }, [isCartOpen, cartRestaurant]);
 
   if (!isCartOpen) return null;
 
   const bill = calculateBill();
 
-  const handleApplyCoupon = (e) => {
-    e.preventDefault();
+  const handleApplyCoupon = () => {
     if (!couponInput.trim()) return;
-    const res = applyCouponCode(couponInput);
-    setCouponMessage(res.message);
+    const result = applyCouponCode(couponInput.trim());
+    setCouponMessage(result.message);
+    if (result.success) {
+      setCouponInput('');
+    }
   };
 
-  const handleOpenPaymentModal = () => {
+  const handleProceedToPayment = () => {
     if (!isAuthenticated) {
       setIsCartOpen(false);
-      navigate('/login');
+      navigate('/login?redirect=cart');
       return;
     }
+    if (cartItems.length === 0) return;
     setError('');
     setIsPaymentModalOpen(true);
   };
 
-  const handleConfirmOrder = async () => {
+  const handleConfirmOrderPlacement = async () => {
+    setIsPaymentModalOpen(false);
     setSubmitting(true);
     setError('');
 
     try {
-      const fullAddress = `${deliveryLocation.address} (${deliveryLocation.landmark || 'No landmark'})`;
       const orderPayload = {
-        userId: user.id,
         restaurantId: cartRestaurant ? cartRestaurant.id : 1,
         items: cartItems.map(item => ({
-          menuId: item.menuId,
+          menuId: item.menuId || item.id,
           quantity: item.quantity,
           price: item.price,
-          itemName: item.itemName
-        }))
+          itemName: item.itemName || item.name
+        })),
+        deliveryAddress: deliveryLocation ? `${deliveryLocation.address}, ${deliveryLocation.city}` : 'Default Address',
+        paymentMethod: paymentMethod || 'ONLINE',
+        tipAmount: deliveryTip || 0,
+        instructions: deliveryInstructions.join(',')
       };
 
       const newOrder = await placeOrder(orderPayload);
       clearCart();
-      setIsPaymentModalOpen(false);
       setIsCartOpen(false);
       navigate(`/orders/${newOrder.id}/track`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to place order. Please try again.');
+      setError(err.response?.data?.message || err.customMessage || err.message || 'Failed to place order. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -91,12 +123,6 @@ const CartDrawer = () => {
     { id: 'LEAVE_DOOR', label: 'Leave with guard 🛡️' },
     { id: 'CALL_ARRIVE', label: 'Call upon arrival 📞' },
     { id: 'NO_CUTLERY', label: 'Avoid plastic cutlery 🍃' }
-  ];
-
-  const aiRecommendations = [
-    { menuId: 991, itemName: 'Hot Gulab Jamun (2 Pcs)', price: 60.0, icon: '🍮' },
-    { menuId: 992, itemName: 'Chilled Mango Lassi', price: 70.0, icon: '🥛' },
-    { menuId: 993, itemName: 'Garlic Butter Naan', price: 45.0, icon: '🫓' }
   ];
 
   return (

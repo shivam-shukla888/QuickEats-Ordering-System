@@ -134,8 +134,34 @@ public class OrderController {
 
     @PutMapping("/{id}/cancel")
     public ResponseEntity<OrderResponseDTO> cancelOrder(@PathVariable Long id) {
-        verifyAdminOrRestaurantOwner();
+        verifyAdminOrOrderOwner(id);
         return ResponseEntity.ok(orderService.cancelOrder(id));
+    }
+
+    private void verifyAdminOrOrderOwner(Long orderId) {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: User is not authenticated");
+        }
+        com.quickeats.model.User authUser = userService.getUserByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + auth.getName()));
+
+        String role = authUser.getRole() != null ? authUser.getRole().toUpperCase() : "";
+        boolean isAdminOrRestaurant = role.equals("ADMIN") || role.equals("RESTAURANT") || role.equals("RESTAURANT_OWNER") || role.equals("OWNER");
+
+        if (isAdminOrRestaurant) {
+            return;
+        }
+
+        com.quickeats.model.Order order = orderService.getOrderById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+        boolean isOrderOwner = order.getUser() != null && order.getUser().getId().equals(authUser.getId());
+
+        if (!isOrderOwner) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: You can only cancel your own orders unless you are an ADMIN or Restaurant staff");
+        }
     }
 
     private void verifyUserOwnershipOrAdmin(Long targetUserId) {

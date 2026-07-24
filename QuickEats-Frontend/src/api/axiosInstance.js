@@ -9,6 +9,7 @@ export const setInMemoryToken = (token) => {
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -44,6 +45,17 @@ const processQueue = (error, token = null) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Normalize custom error message for UI consumption
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      error.customMessage = 'Request timed out after 15 seconds. Please try again.';
+    } else if (!error.response) {
+      error.customMessage = 'Network error or backend server unreachable. Please check your internet connection.';
+    } else if (error.response?.data?.message) {
+      error.customMessage = error.response.data.message;
+    } else {
+      error.customMessage = error.message || 'An unexpected error occurred.';
+    }
+
     const originalRequest = error.config;
 
     if (error.response && error.response.status === 401 && !originalRequest._retry) {

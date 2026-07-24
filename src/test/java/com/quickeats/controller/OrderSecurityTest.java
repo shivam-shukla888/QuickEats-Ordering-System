@@ -100,9 +100,16 @@ class OrderSecurityTest {
     }
 
     @Test
-    void cancelOrder_PlainCustomer_Returns403Forbidden() throws Exception {
+    void cancelOrder_CustomerOwnPendingOrder_Returns200OK() throws Exception {
         mockMvc.perform(put("/api/orders/" + sampleOrder.getId() + "/cancel")
                 .header("Authorization", "Bearer " + customerToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void cancelOrder_CustomerOtherUserOrder_Returns403Forbidden() throws Exception {
+        mockMvc.perform(put("/api/orders/" + sampleOrder.getId() + "/cancel")
+                .header("Authorization", "Bearer " + otherCustomerToken))
                 .andExpect(status().isForbidden());
     }
 
