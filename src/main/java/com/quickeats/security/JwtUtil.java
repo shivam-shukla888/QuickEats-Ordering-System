@@ -18,6 +18,8 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(JwtUtil.class);
+
     @Autowired(required = false)
     private org.springframework.core.env.Environment environment;
 
@@ -34,6 +36,7 @@ public class JwtUtil {
             if (isDev) {
                 secret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
             } else {
+                logger.error("FATAL: JWT_SECRET environment variable is not set or is shorter than 32 bytes. Set it in your hosting provider's environment variables and redeploy.");
                 throw new IllegalStateException("jwt.secret configuration property is missing or under 32 bytes! Set JWT_SECRET or activate dev profile.");
             }
         }

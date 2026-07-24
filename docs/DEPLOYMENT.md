@@ -35,9 +35,18 @@ To ensure data (users, orders, restaurants) persists across server restarts and 
 | `SPRING_DATASOURCE_USERNAME` | `quickeats_user` *(From Render Postgres Info)* |
 | `SPRING_DATASOURCE_PASSWORD` | `your_postgres_password` *(From Render Postgres Info)* |
 | `SPRING_JPA_HIBERNATE_DDL_AUTO` | `update` *(Use `update` on first run to auto-create tables; set to `validate` later for safety)* |
-| `JWT_SECRET` | `404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970` *(256-bit secret key)* |
+| `JWT_SECRET` | Must be a unique 256-bit (32+ byte) secret generated using `openssl rand -hex 32` |
 | `CORS_ALLOWED_ORIGINS` | `https://quickeats-sandy.vercel.app,http://localhost:5173` |
 | `GROQ_API_KEY` | `gsk_your_groq_api_key_here` *(Optional for AI Chat & Recommendations)* |
+
+> [!WARNING]
+> **Production JWT Secret Security**:
+> 1. Generate a brand new, unique 256-bit key using terminal command:
+>    ```bash
+>    openssl rand -hex 32
+>    ```
+> 2. **Never reuse any secret key previously committed to git history** (even in early/deleted commits). Any key in git history is permanently public.
+> 3. **Profiles Warning**: Render environment MUST NOT set `SPRING_PROFILES_ACTIVE=dev`. The application defaults to `SPRING_PROFILES_ACTIVE=prod` to enforce fail-fast security checks.
 
 4. Click **Save Changes**. Render will automatically trigger a deployment with PostgreSQL.
 

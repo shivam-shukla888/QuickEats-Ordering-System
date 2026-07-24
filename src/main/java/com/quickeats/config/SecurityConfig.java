@@ -108,6 +108,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/assistant/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Infrastructure
+                .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/error").permitAll()
