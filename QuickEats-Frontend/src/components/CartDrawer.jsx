@@ -43,18 +43,22 @@ const CartDrawer = () => {
     const fetchUpsells = async () => {
       try {
         const targetRestId = cartRestaurant?.id || 1;
-        const res = await axiosInstance.get(`/api/restaurants/${targetRestId}`);
-        if (isMounted && res.data?.menuItems && res.data.menuItems.length > 0) {
-          const items = res.data.menuItems.slice(0, 3).map(m => ({
+        const res = await axiosInstance.get(`/api/restaurants/${targetRestId}/menu`);
+        if (isMounted && Array.isArray(res.data) && res.data.length > 0) {
+          const items = res.data.slice(0, 3).map(m => ({
             menuId: m.id,
             itemName: m.itemName,
             price: m.price,
             icon: m.isVeg ? '🍮' : '🍲'
           }));
           setAiRecommendations(items);
+        } else if (isMounted) {
+          setAiRecommendations([]);
         }
       } catch (err) {
-        // Fallback gracefully
+        if (isMounted) {
+          setAiRecommendations([]);
+        }
       }
     };
     if (isCartOpen) {
@@ -203,30 +207,32 @@ const CartDrawer = () => {
                   </div>
 
                   {/* AI Smart Order Recommendations */}
-                  <div className="p-3.5 sm:p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl space-y-2.5">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-                      <Sparkles className="w-4 h-4 text-orange-600 animate-pulse" />
-                      <span>Frequently Ordered Together</span>
+                  {aiRecommendations && aiRecommendations.length > 0 && (
+                    <div className="p-3.5 sm:p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl space-y-2.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+                        <Sparkles className="w-4 h-4 text-orange-600 animate-pulse" />
+                        <span>Frequently Ordered Together</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {aiRecommendations.map((rec) => (
+                          <button
+                            key={rec.menuId}
+                            onClick={() => addToCart(rec, cartRestaurant || { id: 1, name: 'North Indian Kitchen' })}
+                            className="p-2 bg-white border border-amber-200 hover:border-orange-500 rounded-xl text-left transition-all shadow-xs flex flex-col justify-between"
+                          >
+                            <div>
+                              <span className="text-base">{rec.icon}</span>
+                              <p className="text-[10px] font-bold text-slate-800 truncate mt-1">{rec.itemName}</p>
+                            </div>
+                            <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
+                              <span className="text-[10px] font-black text-orange-600">₹{rec.price}</span>
+                              <Plus className="w-3 h-3 text-orange-600" />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {aiRecommendations.map((rec) => (
-                        <button
-                          key={rec.menuId}
-                          onClick={() => addToCart(rec, cartRestaurant || { id: 1, name: 'North Indian Kitchen' })}
-                          className="p-2 bg-white border border-amber-200 hover:border-orange-500 rounded-xl text-left transition-all shadow-xs flex flex-col justify-between"
-                        >
-                          <div>
-                            <span className="text-base">{rec.icon}</span>
-                            <p className="text-[10px] font-bold text-slate-800 truncate mt-1">{rec.itemName}</p>
-                          </div>
-                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
-                            <span className="text-[10px] font-black text-orange-600">₹{rec.price}</span>
-                            <Plus className="w-3 h-3 text-orange-600" />
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  )}
 
                   {/* Delivery Instructions Chips */}
                   <div className="space-y-2 pt-2 border-t border-slate-100">
