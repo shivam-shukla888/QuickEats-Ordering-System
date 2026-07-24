@@ -7,7 +7,6 @@ import java.util.List;
 
 public class CreateOrderDTO {
     
-    @NotNull(message = "User ID is required")
     private Long userId;
     
     @NotNull(message = "Restaurant ID is required")
@@ -18,6 +17,11 @@ public class CreateOrderDTO {
     private List<OrderItemDTO> items;
 
     public CreateOrderDTO() {}
+
+    public CreateOrderDTO(Long restaurantId, List<OrderItemDTO> items) {
+        this.restaurantId = restaurantId;
+        this.items = items;
+    }
 
     public CreateOrderDTO(Long userId, Long restaurantId, List<OrderItemDTO> items) {
         this.userId = userId;

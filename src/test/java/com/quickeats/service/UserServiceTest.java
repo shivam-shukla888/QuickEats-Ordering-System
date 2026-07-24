@@ -70,6 +70,30 @@ class UserServiceTest {
     }
 
     @Test
+    void createUser_PrivilegeEscalationAttempt_AlwaysSetsCustomerRole() {
+        User maliciousUser = new User("Attacker", "attacker@example.com", "pass123", "ADMIN");
+        when(userRepository.existsByEmail(maliciousUser.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode("pass123")).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User created = userService.createUser(maliciousUser);
+
+        assertNotNull(created);
+        assertEquals("CUSTOMER", created.getRole(), "Role must be forced to CUSTOMER during creation");
+    }
+
+    @Test
+    void updateUserRole_Success() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUser));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User updated = userService.updateUserRole(1L, "ADMIN");
+
+        assertNotNull(updated);
+        assertEquals("ADMIN", updated.getRole());
+    }
+
+    @Test
     void deleteUser_UserNotFound_ThrowsException() {
         when(userRepository.existsById(99L)).thenReturn(false);
 

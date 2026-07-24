@@ -10,6 +10,8 @@ import com.quickeats.model.Order;
 import com.quickeats.model.OrderStatus;
 import com.quickeats.model.Restaurant;
 import com.quickeats.model.User;
+import com.quickeats.model.Menu;
+import com.quickeats.repository.MenuRepository;
 import com.quickeats.repository.OrderRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +37,9 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
+    private MenuRepository menuRepository;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
@@ -53,9 +58,27 @@ public class OrderService {
         Restaurant restaurant = restaurantService.getRestaurantEntityById(createOrderDTO.getRestaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + createOrderDTO.getRestaurantId()));
 
-        Double totalAmount = createOrderDTO.getItems().stream()
-                .mapToDouble(item -> item.getPrice() * item.getQuantity())
-                .sum();
+        double computedTotal = 0.0;
+        if (createOrderDTO.getItems() != null) {
+            for (OrderItemDTO item : createOrderDTO.getItems()) {
+                if (item.getMenuId() == null) {
+                    throw new ResourceNotFoundException("Menu ID is required for order items");
+                }
+                Menu menu = menuRepository.findById(item.getMenuId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Menu item not found with id: " + item.getMenuId()));
+
+                if (menu.getRestaurant() == null || !menu.getRestaurant().getId().equals(restaurant.getId())) {
+                    throw new ResourceNotFoundException("Menu item with id: " + item.getMenuId() + " does not belong to restaurant id: " + restaurant.getId());
+                }
+
+                item.setPrice(menu.getPrice());
+                if (item.getItemName() == null || item.getItemName().trim().isEmpty()) {
+                    item.setItemName(menu.getItemName());
+                }
+                computedTotal += menu.getPrice() * item.getQuantity();
+            }
+        }
+        Double totalAmount = computedTotal;
 
         try {
             String orderItemsJson = objectMapper.writeValueAsString(createOrderDTO.getItems());
@@ -104,9 +127,19 @@ public class OrderService {
     private FcmService fcmService;
 
     public OrderResponseDTO updateOrderStatus(Long orderId, String status) {
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status cannot be null or empty");
+        }
+        OrderStatus orderStatus;
+        try {
+            orderStatus = OrderStatus.valueOf(status.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid order status: " + status, e);
+        }
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-        order.setStatus(status);
+        order.setStatus(orderStatus.name());
         Order updated = orderRepository.save(order);
 
         int eta = "DELIVERED".equalsIgnoreCase(status) ? 0 : ("OUT_FOR_DELIVERY".equalsIgnoreCase(status) ? 12 : 20);

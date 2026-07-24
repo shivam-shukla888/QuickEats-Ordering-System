@@ -42,13 +42,40 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
+        verifyUserOwnershipOrAdmin(id);
         User updatedUser = userService.updateUser(id, userDetails);
         return ResponseEntity.ok(UserResponseDTO.fromEntity(updatedUser));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
+        verifyUserOwnershipOrAdmin(id);
         userService.deleteUser(id);
         return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+    }
+
+    @PutMapping("/{id}/role")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponseDTO> updateUserRole(@PathVariable Long id, @RequestBody Map<String, String> roleMap) {
+        String role = roleMap.get("role");
+        User updatedUser = userService.updateUserRole(id, role);
+        return ResponseEntity.ok(UserResponseDTO.fromEntity(updatedUser));
+    }
+
+    private void verifyUserOwnershipOrAdmin(Long targetUserId) {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: User is not authenticated");
+        }
+        User authUser = userService.getUserByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + auth.getName()));
+
+        boolean isAdmin = authUser.getRole() != null && "ADMIN".equalsIgnoreCase(authUser.getRole());
+        boolean isOwner = authUser.getId() != null && authUser.getId().equals(targetUserId);
+
+        if (!isAdmin && !isOwner) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: You can only modify your own account unless you are an ADMIN");
+        }
     }
 }

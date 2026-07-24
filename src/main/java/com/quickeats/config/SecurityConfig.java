@@ -25,8 +25,11 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -103,7 +106,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/recommend/**").permitAll()
                 .requestMatchers("/api/support/**").permitAll()
                 .requestMatchers("/api/assistant/**").permitAll()
-                .requestMatchers("/api/admin/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Infrastructure
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()

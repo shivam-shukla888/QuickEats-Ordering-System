@@ -26,9 +26,7 @@ public class UserService {
             throw new IllegalArgumentException("Email already exists: " + user.getEmail());
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
-            user.setRole("CUSTOMER");
-        }
+        user.setRole("CUSTOMER");
         return userRepository.save(user);
     }
 
@@ -57,10 +55,17 @@ public class UserService {
         if (userDetails.getPassword() != null && !userDetails.getPassword().trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         }
-        if (userDetails.getRole() != null && !userDetails.getRole().trim().isEmpty()) {
-            user.setRole(userDetails.getRole());
-        }
 
+        return userRepository.save(user);
+    }
+
+    public User updateUserRole(Long id, String role) {
+        if (role == null || role.trim().isEmpty()) {
+            throw new IllegalArgumentException("Role is required");
+        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        user.setRole(role.trim().toUpperCase());
         return userRepository.save(user);
     }
 

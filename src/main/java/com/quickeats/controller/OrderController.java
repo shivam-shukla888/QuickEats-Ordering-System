@@ -29,6 +29,14 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponseDTO> placeOrder(@Valid @RequestBody CreateOrderDTO createOrderDTO) {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            userService.getUserByEmail(auth.getName()).ifPresent(u -> createOrderDTO.setUserId(u.getId()));
+        }
+        if (createOrderDTO.getUserId() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: User must be authenticated to place an order");
+        }
         OrderResponseDTO orderResponse = orderService.placeOrder(createOrderDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
     }
@@ -60,6 +68,7 @@ public class OrderController {
     public ResponseEntity<Page<OrderResponseDTO>> getOrdersByUser(
             @PathVariable Long userId,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        verifyUserOwnershipOrAdmin(userId);
         return ResponseEntity.ok(orderService.getOrdersByUser(userId, pageable));
     }
 
@@ -75,6 +84,7 @@ public class OrderController {
             @PathVariable Long userId,
             @PathVariable String status,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        verifyUserOwnershipOrAdmin(userId);
         return ResponseEntity.ok(orderService.getOrdersByUserAndStatus(userId, status, pageable));
     }
 
@@ -114,6 +124,7 @@ public class OrderController {
     @PutMapping("/{id}/status")
     public ResponseEntity<OrderResponseDTO> updateOrderStatus(
             @PathVariable Long id, @RequestBody Map<String, String> statusMap) {
+        verifyAdminOrRestaurantOwner();
         String status = statusMap.get("status");
         if (status == null || status.trim().isEmpty()) {
             throw new IllegalArgumentException("Status is required");
@@ -123,6 +134,40 @@ public class OrderController {
 
     @PutMapping("/{id}/cancel")
     public ResponseEntity<OrderResponseDTO> cancelOrder(@PathVariable Long id) {
+        verifyAdminOrRestaurantOwner();
         return ResponseEntity.ok(orderService.cancelOrder(id));
+    }
+
+    private void verifyUserOwnershipOrAdmin(Long targetUserId) {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: User is not authenticated");
+        }
+        com.quickeats.model.User authUser = userService.getUserByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + auth.getName()));
+
+        boolean isAdmin = authUser.getRole() != null && "ADMIN".equalsIgnoreCase(authUser.getRole());
+        boolean isOwner = authUser.getId() != null && authUser.getId().equals(targetUserId);
+
+        if (!isAdmin && !isOwner) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: You can only view your own orders unless you are an ADMIN");
+        }
+    }
+
+    private void verifyAdminOrRestaurantOwner() {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: User is not authenticated");
+        }
+        com.quickeats.model.User authUser = userService.getUserByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + auth.getName()));
+
+        String role = authUser.getRole() != null ? authUser.getRole().toUpperCase() : "";
+        boolean isAuthorized = role.equals("ADMIN") || role.equals("RESTAURANT") || role.equals("RESTAURANT_OWNER") || role.equals("OWNER");
+        if (!isAuthorized) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: Plain CUSTOMER cannot modify order status or cancel orders");
+        }
     }
 }

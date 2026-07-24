@@ -1,29 +1,43 @@
 package com.quickeats.security;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class JwtUtilTest {
 
     @Test
-    void validateSecretKey_WhenSecretIsMissingOrShort_SetsFallbackSecret() {
+    void validateSecretKey_WhenSecretIsMissingInNonDev_ThrowsIllegalStateException() {
         JwtUtil jwtUtil = new JwtUtil();
-
-        // 1. Null or empty secret
         ReflectionTestUtils.setField(jwtUtil, "secret", "");
-        jwtUtil.validateSecretKey();
-        String activeSecret1 = (String) ReflectionTestUtils.getField(jwtUtil, "secret");
-        assertNotNull(activeSecret1);
-        assertTrue(activeSecret1.length() >= 32);
 
-        // 2. Secret shorter than 256 bits (less than 32 bytes)
+        assertThrows(IllegalStateException.class, jwtUtil::validateSecretKey);
+    }
+
+    @Test
+    void validateSecretKey_WhenSecretIsShortInNonDev_ThrowsIllegalStateException() {
+        JwtUtil jwtUtil = new JwtUtil();
         ReflectionTestUtils.setField(jwtUtil, "secret", "short_secret_under_32_bytes");
-        jwtUtil.validateSecretKey();
-        String activeSecret2 = (String) ReflectionTestUtils.getField(jwtUtil, "secret");
-        assertNotNull(activeSecret2);
-        assertTrue(activeSecret2.length() >= 32);
+
+        assertThrows(IllegalStateException.class, jwtUtil::validateSecretKey);
+    }
+
+    @Test
+    void validateSecretKey_WhenSecretIsMissingInDev_SetsDevFallbackSecret() {
+        JwtUtil jwtUtil = new JwtUtil();
+        Environment env = mock(Environment.class);
+        when(env.acceptsProfiles(Profiles.of("dev"))).thenReturn(true);
+        ReflectionTestUtils.setField(jwtUtil, "environment", env);
+        ReflectionTestUtils.setField(jwtUtil, "secret", "");
+
+        assertDoesNotThrow(jwtUtil::validateSecretKey);
+        String activeSecret = (String) ReflectionTestUtils.getField(jwtUtil, "secret");
+        assertNotNull(activeSecret);
+        assertTrue(activeSecret.getBytes().length >= 32);
     }
 
     @Test

@@ -35,3 +35,18 @@ All future commits MUST follow the **Conventional Commits** specification:
   git config user.name "Shivam Shukla"
   git config user.email "shivam-shukla888@users.noreply.github.com"
   ```
+
+---
+
+## 3. Repository History Purge Notice (`target/*.jar`)
+
+> [!WARNING]
+> A compiled binary artifact (`target/*.jar`) was committed in an early commit of this repository and bloats the git commit history.
+>
+> **Recommendation**: Before showcasing this repository to recruiters or external reviewers, run [`git filter-repo`](https://github.com/newren/git-filter-repo) or [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) to purge historical JAR files from git history.
+>
+> **Example (`git filter-repo`)**:
+> ```bash
+> git filter-repo --path target/ --invert-paths
+> ```
+> *Note*: Purging historical commits requires force-pushing (`git push origin --force`), which rewrites git commit hashes. Ensure remote backups exist before running.

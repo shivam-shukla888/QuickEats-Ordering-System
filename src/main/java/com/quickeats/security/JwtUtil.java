@@ -5,6 +5,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,9 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
+    @Autowired(required = false)
+    private org.springframework.core.env.Environment environment;
+
     @Value("${jwt.secret:}")
     private String secret;
 
@@ -26,7 +30,12 @@ public class JwtUtil {
     @PostConstruct
     public void validateSecretKey() {
         if (secret == null || secret.trim().isEmpty() || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            secret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+            boolean isDev = environment != null && environment.acceptsProfiles(org.springframework.core.env.Profiles.of("dev"));
+            if (isDev) {
+                secret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+            } else {
+                throw new IllegalStateException("jwt.secret configuration property is missing or under 32 bytes! Set JWT_SECRET or activate dev profile.");
+            }
         }
     }
 
