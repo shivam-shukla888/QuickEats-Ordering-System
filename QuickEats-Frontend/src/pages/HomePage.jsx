@@ -18,6 +18,22 @@ const HomePage = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [loadingSeconds, setLoadingSeconds] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      setLoadingSeconds(0);
+      interval = setInterval(() => {
+        setLoadingSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setLoadingSeconds(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [loading]);
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -242,9 +258,15 @@ const HomePage = () => {
           </span>
         </div>
 
-        {/* Loading / Error States */}
         {loading ? (
-          <LoadingSpinner message={isAiSearch ? 'AI is interpreting your craving...' : 'Fetching delicious spots...'} />
+          <LoadingSpinner
+            message={isAiSearch ? 'AI is interpreting your craving...' : 'Fetching delicious spots...'}
+            subMessage={
+              loadingSeconds >= 18
+                ? `Render's free tier backend is spinning up after inactivity (${loadingSeconds}s). This initial fetch may take 30–90 seconds...`
+                : null
+            }
+          />
         ) : error ? (
           <div className="p-8 bg-red-50 border border-red-200 rounded-3xl text-center text-red-700 space-y-2">
             <p className="font-bold">{error}</p>

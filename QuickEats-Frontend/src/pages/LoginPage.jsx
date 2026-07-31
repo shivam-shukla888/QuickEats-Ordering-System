@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { loginUser, registerUser } from '../api/authApi';
 import { useAuth } from '../context/AuthContext';
-import { Utensils, Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff, Sparkles, Zap } from 'lucide-react';
+import { Utensils, Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff, Sparkles, Zap, Coffee } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -25,6 +26,21 @@ const LoginPage = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    let interval;
+    if (submitting) {
+      setElapsedSeconds(0);
+      interval = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setElapsedSeconds(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [submitting]);
 
   const isMobile = windowWidth < 640;
   const isTablet = windowWidth >= 640 && windowWidth < 1024;
@@ -48,7 +64,9 @@ const LoginPage = () => {
       login(authData);
       navigate(from, { replace: true });
     } catch (err) {
-      if (err.response?.data?.message) {
+      if (err.customMessage) {
+        setError(err.customMessage);
+      } else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.response?.status) {
         setError(`Login failed (status ${err.response.status}). Please try again.`);
@@ -83,7 +101,9 @@ const LoginPage = () => {
       login(authData);
       navigate(from, { replace: true });
     } catch (err) {
-      if (err.response?.data?.message) {
+      if (err.customMessage) {
+        setError(err.customMessage);
+      } else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.response?.status) {
         setError(`Authentication failed (status ${err.response.status}). Please try again.`);
@@ -470,6 +490,29 @@ const LoginPage = () => {
             </div>
           </div>
 
+          {/* Cold Start Warning Banner (shows after ~18s delay if Render backend is sleeping) */}
+          {submitting && elapsedSeconds >= 18 && (
+            <div
+              style={{
+                padding: '12px 14px',
+                background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                border: '1.5px solid #fde68a',
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                marginBottom: '16px',
+                boxShadow: '0 4px 12px rgba(217,119,6,0.1)',
+              }}
+            >
+              <Coffee style={{ width: '18px', height: '18px', color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ fontSize: '12px', color: '#92400e', lineHeight: 1.45, fontWeight: 500 }}>
+                <strong style={{ display: 'block', marginBottom: '2px', color: '#78350f' }}>☕ Server is spinning up... ({elapsedSeconds}s)</strong>
+                Render's free tier backend sleeps after 15m of inactivity. Wake-up takes 30–90 seconds on first request. Thank you for your patience!
+              </div>
+            </div>
+          )}
+
           {/* Submit Button */}
           <button
             id="login-submit"
@@ -479,11 +522,11 @@ const LoginPage = () => {
               width: '100%',
               padding: isMobile ? '15px' : '14px',
               background: submitting
-                ? '#d4d4d8'
+                ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'
                 : 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%)',
               color: 'white',
               fontWeight: 800,
-              fontSize: isMobile ? '15px' : '14px',
+              fontSize: isMobile ? '14px' : '13px',
               borderRadius: '14px',
               border: 'none',
               cursor: submitting ? 'not-allowed' : 'pointer',
@@ -493,7 +536,7 @@ const LoginPage = () => {
               gap: '8px',
               boxShadow: submitting ? 'none' : '0 8px 24px rgba(234,88,12,0.25), 0 2px 8px rgba(234,88,12,0.15)',
               transition: 'all 0.2s ease',
-              opacity: submitting ? 0.6 : 1,
+              opacity: submitting ? 0.85 : 1,
               letterSpacing: '-0.01em',
               fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
             }}
@@ -513,14 +556,18 @@ const LoginPage = () => {
             {submitting ? (
               <>
                 <svg
-                  style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }}
+                  style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite', flexShrink: 0 }}
                   viewBox="0 0 24 24"
                   fill="none"
                 >
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="60" strokeLinecap="round" opacity="0.3" />
                   <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                 </svg>
-                <span>Signing in...</span>
+                <span style={{ textAlign: 'center' }}>
+                  {elapsedSeconds >= 18
+                    ? `Waking up free-tier server (${elapsedSeconds}s)...`
+                    : `Connecting to server, this may take up to a minute...`}
+                </span>
               </>
             ) : (
               <>

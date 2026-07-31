@@ -2,31 +2,34 @@ import axiosInstance from './axiosInstance';
 
 export const getRestaurants = async (page = 0, size = 10, sort = 'id,asc') => {
   const response = await axiosInstance.get('/api/restaurants', {
-    params: { page, size, sort }
+    params: { page, size, sort },
+    timeout: 90000
   });
   return response.data;
 };
 
 export const getRestaurantById = async (id) => {
-  const response = await axiosInstance.get(`/api/restaurants/${id}`);
+  const response = await axiosInstance.get(`/api/restaurants/${id}`, { timeout: 90000 });
   return response.data;
 };
 
 export const getCuisines = async () => {
-  const response = await axiosInstance.get('/api/restaurants/cuisines');
+  const response = await axiosInstance.get('/api/restaurants/cuisines', { timeout: 90000 });
   return response.data;
 };
 
 export const getRestaurantsByCuisine = async (cuisineType, page = 0, size = 10) => {
   const response = await axiosInstance.get(`/api/restaurants/cuisine/${cuisineType}`, {
-    params: { page, size }
+    params: { page, size },
+    timeout: 90000
   });
   return response.data;
 };
 
 export const searchRestaurants = async (name, page = 0, size = 10) => {
   const response = await axiosInstance.get('/api/restaurants/search', {
-    params: { name, page, size }
+    params: { name, page, size },
+    timeout: 90000
   });
   return response.data;
 };

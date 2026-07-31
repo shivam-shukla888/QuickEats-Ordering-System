@@ -9,7 +9,7 @@ export const setInMemoryToken = (token) => {
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 45000,
+  timeout: 90000, // 90 seconds to allow Render free tier backend to spin up from cold start
   headers: {
     'Content-Type': 'application/json',
   },
@@ -47,21 +47,21 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Retry once on cold-start timeout or network connectivity glitch
+    // Retry once on cold-start timeout or network connectivity glitch (e.g. Render free tier waking up)
     if (
       originalRequest &&
       !originalRequest._retryColdStart &&
-      (error.code === 'ECONNABORTED' || !error.response || error.response?.status === 503)
+      (error.code === 'ECONNABORTED' || error.message?.includes('timeout') || !error.response || error.response?.status === 503)
     ) {
       originalRequest._retryColdStart = true;
-      console.warn('[Axios Interceptor] Cold-start or network glitch detected. Retrying request once...');
-      await new Promise((res) => setTimeout(res, 2000));
+      console.warn('[Axios Interceptor] Cold-start timeout or network glitch detected on Render free tier. Retrying request once after 2.5s delay...');
+      await new Promise((res) => setTimeout(res, 2500));
       return axiosInstance(originalRequest);
     }
 
     // Normalize custom error message for UI consumption
     if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-      error.customMessage = 'Server taking longer than expected to respond (cold start). Please retry in a moment.';
+      error.customMessage = 'Server taking longer than expected to respond. Render free-tier backend may still be waking up. Please retry in a moment.';
     } else if (!error.response) {
       error.customMessage = 'Network error or backend server unreachable. Please check your connection or try again.';
     } else if (error.response?.data?.message) {
@@ -89,7 +89,7 @@ axiosInstance.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const res = await axios.post(`${API_BASE_URL}/api/auth/refresh`, { refreshToken });
+          const res = await axios.post(`${API_BASE_URL}/api/auth/refresh`, { refreshToken }, { timeout: 90000 });
           const newAccessToken = res.data.accessToken || res.data.token;
           const newRefreshToken = res.data.refreshToken;
 

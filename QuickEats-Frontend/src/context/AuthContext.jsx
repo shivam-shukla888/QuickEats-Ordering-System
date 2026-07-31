@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       const storedRefreshToken = localStorage.getItem('quickeats_refresh_token');
       if (storedRefreshToken) {
         try {
-          const res = await axios.post(`${API_BASE_URL}/api/auth/refresh`, { refreshToken: storedRefreshToken });
+          const res = await axios.post(`${API_BASE_URL}/api/auth/refresh`, { refreshToken: storedRefreshToken }, { timeout: 90000 });
           const newAccessToken = res.data.accessToken || res.data.token;
           const newRefreshToken = res.data.refreshToken;
           const userData = res.data.user || user;
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
     const storedRefreshToken = localStorage.getItem('quickeats_refresh_token');
     if (storedRefreshToken) {
       try {
-        await axios.post(`${API_BASE_URL}/api/auth/logout`, { refreshToken: storedRefreshToken });
+        await axios.post(`${API_BASE_URL}/api/auth/logout`, { refreshToken: storedRefreshToken }, { timeout: 90000 });
       } catch (e) {
         console.warn('Logout endpoint call error:', e);
       }
