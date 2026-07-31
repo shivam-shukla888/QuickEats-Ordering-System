@@ -97,6 +97,14 @@ public class RestaurantService {
                 .collect(Collectors.toList());
     }
 
+    public Page<MenuResponseDTO> getMenuByRestaurant(Long restaurantId, Pageable pageable) {
+        if (!restaurantRepository.existsById(restaurantId)) {
+            throw new ResourceNotFoundException("Restaurant not found with id: " + restaurantId);
+        }
+        return menuRepository.findByRestaurantId(restaurantId, pageable)
+                .map(MenuResponseDTO::fromEntity);
+    }
+
     public RestaurantResponseDTO updateRestaurant(Long id, RestaurantRequestDTO dto) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + id));

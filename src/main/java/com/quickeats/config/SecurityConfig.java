@@ -95,10 +95,19 @@ public class SecurityConfig {
                 // Auth endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/register", "/api/users/login").permitAll()
-                // Public read endpoints
+                // Public read endpoints (browsing restaurants, menus, cuisines, AI search)
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/restaurants").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/search/**", "/api/search").permitAll()
-                // Public service endpoints
+                // Protected write endpoints for restaurants & menus (Admin / Restaurant staff only)
+                .requestMatchers(HttpMethod.POST, "/api/restaurants/**").hasAnyRole("ADMIN", "RESTAURANT_OWNER", "RESTAURANT", "OWNER")
+                .requestMatchers(HttpMethod.PUT, "/api/restaurants/**").hasAnyRole("ADMIN", "RESTAURANT_OWNER", "RESTAURANT", "OWNER")
+                .requestMatchers(HttpMethod.DELETE, "/api/restaurants/**").hasAnyRole("ADMIN", "RESTAURANT_OWNER", "RESTAURANT", "OWNER")
+                // Protected cart & order endpoints (Authenticated users)
+                .requestMatchers("/api/cart/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/orders/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/orders/*/status").hasAnyRole("ADMIN", "RESTAURANT_OWNER", "RESTAURANT", "OWNER")
+                .requestMatchers(HttpMethod.PUT, "/api/orders/*/cancel").authenticated()
+                // Public AI/service endpoints
                 .requestMatchers("/api/ai/**").permitAll()
                 .requestMatchers("/api/chat/**").permitAll()
                 .requestMatchers("/api/recommendations/**").permitAll()

@@ -181,8 +181,8 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
         String currentStatus = order.getStatus() != null ? order.getStatus().toUpperCase() : "";
-        if (!"PENDING".equals(currentStatus) && !"PREPARING".equals(currentStatus)) {
-            throw new IllegalStateException("Only PENDING or PREPARING orders can be cancelled.");
+        if (!"PENDING".equals(currentStatus) && !"CONFIRMED".equals(currentStatus) && !"PREPARING".equals(currentStatus)) {
+            throw new IllegalStateException("Only PENDING, CONFIRMED, or PREPARING orders can be cancelled. Current status: " + currentStatus);
         }
 
         order.setStatus("CANCELLED");
