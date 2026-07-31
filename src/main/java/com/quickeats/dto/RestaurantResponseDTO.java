@@ -8,6 +8,8 @@ public class RestaurantResponseDTO {
     private String name;
     private String address;
     private String cuisineType;
+    private Double averageRating = 4.5;
+    private Long totalReviews = 0L;
 
     public RestaurantResponseDTO() {
     }
@@ -17,6 +19,17 @@ public class RestaurantResponseDTO {
         this.name = name;
         this.address = address;
         this.cuisineType = cuisineType;
+        this.averageRating = 4.5;
+        this.totalReviews = 0L;
+    }
+
+    public RestaurantResponseDTO(Long id, String name, String address, String cuisineType, Double averageRating, Long totalReviews) {
+        this.id = id;
+        this.name = name;
+        this.address = address;
+        this.cuisineType = cuisineType;
+        this.averageRating = averageRating != null ? averageRating : 4.5;
+        this.totalReviews = totalReviews != null ? totalReviews : 0L;
     }
 
     public static RestaurantResponseDTO fromEntity(Restaurant restaurant) {
@@ -61,5 +74,21 @@ public class RestaurantResponseDTO {
 
     public void setCuisineType(String cuisineType) {
         this.cuisineType = cuisineType;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Long getTotalReviews() {
+        return totalReviews;
+    }
+
+    public void setTotalReviews(Long totalReviews) {
+        this.totalReviews = totalReviews;
     }
 }

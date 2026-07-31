@@ -15,18 +15,12 @@ const PaymentModal = ({ isOpen, onClose, onConfirmPayment, submitting }) => {
 
   const handlePaySubmit = (e) => {
     e.preventDefault();
-
-    if (selectedTab === 'RAZORPAY') {
-      // Simulate Razorpay Sandbox Payment Flow
-      setShowRzpSuccessModal(true);
-    } else {
-      onConfirmPayment();
-    }
+    onConfirmPayment(selectedTab);
   };
 
   const handleRzpConfirmSuccess = () => {
     setShowRzpSuccessModal(false);
-    onConfirmPayment();
+    onConfirmPayment('RAZORPAY');
   };
 
   return (

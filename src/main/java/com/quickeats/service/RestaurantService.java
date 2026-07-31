@@ -9,6 +9,7 @@ import com.quickeats.model.Menu;
 import com.quickeats.model.Restaurant;
 import com.quickeats.repository.MenuRepository;
 import com.quickeats.repository.RestaurantRepository;
+import com.quickeats.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,26 +28,42 @@ public class RestaurantService {
     @Autowired
     private MenuRepository menuRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    private RestaurantResponseDTO enrichWithRating(RestaurantResponseDTO dto) {
+        if (dto != null && dto.getId() != null) {
+            Double avg = reviewRepository.getAverageRatingForRestaurant(dto.getId());
+            Long count = reviewRepository.countReviewsForRestaurant(dto.getId());
+            dto.setAverageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 4.5);
+            dto.setTotalReviews(count != null ? count : 0L);
+        }
+        return dto;
+    }
+
     public RestaurantResponseDTO createRestaurant(RestaurantRequestDTO dto) {
         Restaurant restaurant = new Restaurant(dto.getName(), dto.getAddress(), dto.getCuisineType());
         Restaurant saved = restaurantRepository.save(restaurant);
-        return RestaurantResponseDTO.fromEntity(saved);
+        return enrichWithRating(RestaurantResponseDTO.fromEntity(saved));
     }
 
     public Page<RestaurantResponseDTO> getAllRestaurants(Pageable pageable) {
-        return restaurantRepository.findAll(pageable).map(RestaurantResponseDTO::fromEntity);
+        return restaurantRepository.findAll(pageable)
+                .map(RestaurantResponseDTO::fromEntity)
+                .map(this::enrichWithRating);
     }
 
     public List<RestaurantResponseDTO> getAllRestaurants() {
         return restaurantRepository.findAll().stream()
                 .map(RestaurantResponseDTO::fromEntity)
+                .map(this::enrichWithRating)
                 .collect(Collectors.toList());
     }
 
     public RestaurantResponseDTO getRestaurantById(Long id) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + id));
-        return RestaurantResponseDTO.fromEntity(restaurant);
+        return enrichWithRating(RestaurantResponseDTO.fromEntity(restaurant));
     }
 
     public Optional<Restaurant> getRestaurantEntityById(Long id) {
@@ -55,23 +72,27 @@ public class RestaurantService {
 
     public Page<RestaurantResponseDTO> getRestaurantsByCuisineType(String cuisineType, Pageable pageable) {
         return restaurantRepository.findByCuisineTypeIgnoreCase(cuisineType, pageable)
-                .map(RestaurantResponseDTO::fromEntity);
+                .map(RestaurantResponseDTO::fromEntity)
+                .map(this::enrichWithRating);
     }
 
     public List<RestaurantResponseDTO> getRestaurantsByCuisineType(String cuisineType) {
         return restaurantRepository.findByCuisineTypeIgnoreCase(cuisineType).stream()
                 .map(RestaurantResponseDTO::fromEntity)
+                .map(this::enrichWithRating)
                 .collect(Collectors.toList());
     }
 
     public Page<RestaurantResponseDTO> searchRestaurantsByName(String name, Pageable pageable) {
         return restaurantRepository.findByNameContaining(name, pageable)
-                .map(RestaurantResponseDTO::fromEntity);
+                .map(RestaurantResponseDTO::fromEntity)
+                .map(this::enrichWithRating);
     }
 
     public List<RestaurantResponseDTO> searchRestaurantsByName(String name) {
         return restaurantRepository.findByNameContaining(name).stream()
                 .map(RestaurantResponseDTO::fromEntity)
+                .map(this::enrichWithRating)
                 .collect(Collectors.toList());
     }
 

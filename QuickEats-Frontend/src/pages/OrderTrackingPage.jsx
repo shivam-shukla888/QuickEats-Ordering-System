@@ -60,6 +60,7 @@ const OrderTrackingPage = () => {
 
   const statuses = [
     { key: 'PENDING', label: 'Order Placed', icon: Clock },
+    { key: 'CONFIRMED', label: 'Payment & Order Confirmed', icon: ShieldCheck },
     { key: 'PREPARING', label: 'Kitchen Preparing', icon: ChefHat },
     { key: 'OUT_FOR_DELIVERY', label: 'Rider On The Way', icon: Truck },
     { key: 'DELIVERED', label: 'Delivered', icon: Home }

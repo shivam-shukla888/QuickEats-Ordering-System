@@ -1,8 +1,13 @@
 import axiosInstance from './axiosInstance';
 
-export const getRestaurants = async (page = 0, size = 10, sort = 'id,asc') => {
+export const getRestaurants = async (page = null, size = null, sort = 'id,asc') => {
+  const params = {};
+  if (page !== null && page !== undefined) params.page = page;
+  if (size !== null && size !== undefined) params.size = size;
+  if (sort) params.sort = sort;
+
   const response = await axiosInstance.get('/api/restaurants', {
-    params: { page, size, sort },
+    params,
     timeout: 90000
   });
   return response.data;
